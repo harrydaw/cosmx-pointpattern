@@ -16,17 +16,17 @@
 
 
 
-spatial-coexpression/  
-├── data/  
-│   ├── raw/          ← original CosMx files, never modified  
-│   └── processed/    ← anything the code generates  
-├── notebooks/        ← exploration & figures (numbered: 01_load_data.ipynb)  
-├── src/  
-│   └── spatialco/    ← future package lives here  
-│       └── __init__.py  
-├── tests/            ← test files  
-├── results/          ← output figures and CSVs  
-├── notes/            ← lab notebook  
-├── .gitignore        ← already set up from GitHub template  
-├── README.md  
-└── requirements.txt  
+spatial-coexpression/
+├── data/
+│   ├── raw/          # original CosMx files (never modified)
+│   └── processed/    # generated data outputs
+├── notebooks/        # exploration & figures (e.g. 01_load_data.ipynb)
+├── src/
+│   └── spatialco/    # future Python package
+│       └── __init__.py
+├── tests/            # unit tests
+├── results/          # output figures and CSV files
+├── notes/            # lab notebook / working notes
+├── .gitignore        # from GitHub template
+├── README.md
+└── requirements.txt
