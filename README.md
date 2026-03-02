@@ -1,7 +1,7 @@
 # cosmx_pointpattern
 
 ## Overall Goal
- **Build a python package for the segmentation-free analysis of various spatial data formats, by running point-pattern analysis on raw transcripts rea**
+ **Build a python package for the segmentation-free analysis of various spatial data formats, by running point-pattern analysis on raw transcripts reads**
 
 ## Milestones
     [ ] End of march - 
