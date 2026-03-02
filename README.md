@@ -14,7 +14,7 @@
         [ ] Package complete
         [ ] Results Finalised
 
-
+## Structure
 ```
 spatial-coexpression/
 ├── data/
