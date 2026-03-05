@@ -46,3 +46,8 @@
 - A safety floor of max(frac_inside, 0.01) prevents division-by-zero for points exactly on the boundary.
 - Validation: after the fix, synthetic CSR test (two independent uniform patterns, n=100 each) gives max |L(r)| < 13 for both a 1000×1000 square window and a 1200×4200 elongated window matching strip geometry. Before the fix, the same test gave L(r) ≈ 195–445.
 - The _fraction_inside_rect helper uses a leading underscore to mark it as a private/internal function — not part of the public API when the code is packaged.
+
+- Positive control (KRT8xKRT18) successful, co-localisation seen in both strips, significant in strip_2
+
+NEXT:
+- Negative control, run on two unrelated genes that have no reason to co-occur and confirm L(r) values of ~0.
