@@ -1,4 +1,4 @@
-### 02/03/26
+### 02/03/26 - EDA
 **Data exploration and narrowing**
 - Today I set up my github structure and venv
 - I then looked into the Varsha_1234.zarr and analysed the structure and counts
@@ -12,7 +12,7 @@
     - Analyse gene count differences to double check infected vs. control
     - First point pattern analysis
 
-### 05/03/26
+### 05/03/26 Narrowed data + Functions 
 **Narrowed data exploration and validation (FOV3, Slide 1)**
 - Loaded the fov3_strip.parquet and confirmed structure
 - Set up gene x strip matrix
