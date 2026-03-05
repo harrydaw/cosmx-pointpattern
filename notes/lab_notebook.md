@@ -22,4 +22,17 @@
     - strip 1 is really two tissue sections that were captured under a single GMM component
     - Shouldn't matter because the infected (strip 2 ) vs controls (1 and 3) doesn't invalidate the K-function
     - Need to make sure everything works across other strips and data though for the future package
-    
+- 16 genes usable across strip_2 and strip_3
+- KRT8 x KRT18 selected as positive control pair
+- Scatter confirms fine-scale spatial interleaving in strip_2
+- 
+- Defined all of my core functions:
+    get_coords()
+    get_window()
+    bivariate_k()
+    k_to_l()
+    compute_envelope()
+
+- Some issues with massive L values (should be in the 10's and I was getting 100's or 1000's)
+- Potentially a global_px vs global_px_transformed issue?
+- Need to look back at the gmm histogram and ensure I used the correct inputs all the way through.
