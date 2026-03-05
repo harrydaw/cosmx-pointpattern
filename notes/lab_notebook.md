@@ -12,7 +12,7 @@
     - Analyse gene count differences to double check infected vs. control
     - First point pattern analysis
 
-### 05/03/26 Narrowed data + Functions 
+### 05/03/26 Narrowed data + Functions  
 **Narrowed data exploration and validation (FOV3, Slide 1)**
 - Loaded the fov3_strip.parquet and confirmed structure
 - Set up gene x strip matrix
