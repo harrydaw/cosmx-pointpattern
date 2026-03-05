@@ -11,3 +11,15 @@
     - Split the 3 tissues into separate data
     - Analyse gene count differences to double check infected vs. control
     - First point pattern analysis
+
+### 05/03/26
+**Narrowed data exploration and validation (FOV3, Slide 1)**
+- Loaded the fov3_strip.parquet and confirmed structure
+- Set up gene x strip matrix
+- Determined minimum transcript count of 50 per gene
+    - "sparse patterns produce high variance K estimates"
+- Potential data limitation wiith the gmm strip assignment 
+    - strip 1 is really two tissue sections that were captured under a single GMM component
+    - Shouldn't matter because the infected (strip 2 ) vs controls (1 and 3) doesn't invalidate the K-function
+    - Need to make sure everything works across other strips and data though for the future package
+    
