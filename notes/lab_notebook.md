@@ -49,5 +49,7 @@
 
 - Positive control (KRT8xKRT18) successful, co-localisation seen in both strips, significant in strip_2
 
-NEXT:
+**Important distinction is permutation vs. simulation. Permutation (for envelope development) retains the spatial locations of the trancripts but destroys the gene-specific labels, and then sees if the co-localisation is linked specifically to the gene label, or just generally is a result of the spatial distribution of the points. Simulation would generate new points in random space, which would mean our result would always come up as more significant, because the transcripts will co-localise based on the fact that they are from the same cells.**
+
+#### NEXT:
 - Negative control, run on two unrelated genes that have no reason to co-occur and confirm L(r) values of ~0.
