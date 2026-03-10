@@ -53,3 +53,9 @@
 
 #### NEXT:
 - Negative control, run on two unrelated genes that have no reason to co-occur and confirm L(r) values of ~0.
+
+### 09/03/26 Validation via negative control
+#### Content check:
+**The permutation null preserves the spatial intensity landscape of all transcripts and asks whether the observed co-localisation is specific to the gene labels, or merely a consequence of shared tissue structure. A Poisson simulation null tests departure from complete spatial randomness, which is inappropriate here because transcript clustering is a biological given — virtually all pairs would exceed it, making it uninformative for discriminating between gene pairs.**
+
+- 
