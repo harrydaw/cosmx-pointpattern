@@ -105,3 +105,6 @@ Selected KRT8 × SCGB3A1 as a second negative control pair. Biological rationale
 - run_pair_analysis() function added to notebook 03: Wraps the entire analysis loop (coord extraction → K/L computation → envelope) into a single function call. Returns a results dict. This was motivated by having run the same pattern three times (KRT8×KRT18, MALAT1×KRT18, KRT8×SCGB3A1) and prepares for the multi-FOV × multi-pair screening.
 
 - Strip labels (strip_1 = leftmost by x-coordinate) are assigned consistently via GMM ordering
+
+#### Up next:
+- Run LR checks across all 6 successful FOVs and rerun previous checks
