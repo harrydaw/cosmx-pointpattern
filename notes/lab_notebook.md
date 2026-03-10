@@ -58,4 +58,21 @@
 #### Content check:
 **The permutation null preserves the spatial intensity landscape of all transcripts and asks whether the observed co-localisation is specific to the gene labels, or merely a consequence of shared tissue structure. A Poisson simulation null tests departure from complete spatial randomness, which is inappropriate here because transcript clustering is a biological given — virtually all pairs would exceed it, making it uninformative for discriminating between gene pairs.**
 
-- 
+### 10/03/26 More control experimentation 
+- MALAT1 × KRT18 negative control initially appeared problematic - raw L(r) values (~120–205) were similar in magnitude to the KRT8 × KRT18 positive control (~131–225). - Realised this is expected: MALAT1 is ubiquitous (present in all cells), so it's spatially close to everything. High raw L(r) reflects shared tissue structure, not gene-specific interaction.
+- Key conceptual clarification: raw L(r) magnitude vs envelope significance. Under the permutation null, the relevant test is whether observed L(r) exceeds the permutation envelope, not whether raw L(r) is near zero. L(r) ~0 is the expectation under a CSR/Poisson null, which is a different question. The permutation null asks: "given the overall spatial distribution of transcripts, is there additional gene-specific co-localisation?" This distinction is critical for the viva.
+- Added plot_diagnostics() function to notebook 03 — scatter plot of both transcript patterns with bounding-box overlay. Accepts an ax parameter for composable multi-panel layouts. Controlled by a DIAGNOSTICS = True/False flag in the analysis loop. Will live in spatialco/plotting.py at packaging stage.
+Selected KRT8 × SCGB3A1 as a second negative control pair. Biological rationale: KRT8 marks simple epithelial cells (alveolar), SCGB3A1 marks secretory airway cells (club/goblet). Different epithelial lineages. However, diagnostic scatter plots revealed both transcript types are spatially interleaved in these strips — the expected spatial separation doesn't hold in this FOV.
+- Raw L(r) is high for all gene pairs tested due to narrow strip geometry forcing spatial proximity. The permutation envelope is therefore not just a significance test but the only way to distinguish gene-specific co-localisation from tissue-structure confounding.
+
+**Control framework now three-part:**
+    Positive: KRT8 × KRT18 — high L(r), above envelope (gene-specific)
+    Negative 1: MALAT1 × KRT18 — high L(r), inside envelope (tissue structure only)
+    Negative 2: KRT8 × SCGB3A1 — high L(r), inside envelope (tissue structure only)
+
+- Potentially limited atm with a narrow FOV, single strip at a time, and low transcript counts
+- Will reevaluate results when I loop this across more data
+
+- Added run_pair_analysis() function 
+    - Just runs all of my custom functions on specific inputs for 1 gene pair on a strip dataframe
+    - Kept the strip by strip loop outside of this to allow me to call the function for per FOV/strip/plate... analysis
