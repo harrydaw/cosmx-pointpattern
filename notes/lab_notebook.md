@@ -76,3 +76,32 @@ Selected KRT8 × SCGB3A1 as a second negative control pair. Biological rationale
 - Added run_pair_analysis() function 
     - Just runs all of my custom functions on specific inputs for 1 gene pair on a strip dataframe
     - Kept the strip by strip loop outside of this to allow me to call the function for per FOV/strip/plate... analysis
+
+**L-R panel check**
+- Loaded CellChatDB (Jin et al., Nat Comms 2021) via the liana Python package (Dimitrov et al., Nat Comms 2022). CellChatDB contains 1,912 curated human ligand-receptor pairs.
+- Cross-referenced with the 1,123 unique gene targets in the CosMx panel. Many L-R genes are present in the panel but none reach the 50-transcript threshold in any single strip of FOV3. Highest counts: VEGFA (41 in strip_2, 32 in strip_3), CCL21 (48 in strip_3).
+- Signalling molecules are expressed at much lower per-FOV levels than structural/housekeeping genes. This is a genuine data characteristic, not a pipeline issue.
+- Key decision: Single-FOV L-R analysis is not feasible at the 50-transcript threshold. Multi-FOV pooling (aggregating results across FOVs, not concatenating coordinates) is required to either boost per-gene counts or to lower the threshold with replication across FOVs as statistical support.
+
+**Multi-FOV strip assignment**
+- Loaded full S1 zarr (updated_stitched_S1.zarr) via spatialdata. 13 FOVs, 710,751 total transcripts.
+- Created notebook 02b_strip_assignment_all_fovs.ipynb. Two-pass approach:
+
+    Pass 1: Plotted raw spatial scatter + x-coordinate histogram side-by-side for all 13 FOVs.
+    Pass 2: Recorded decisions in a fov_config dictionary (FOV ID → n_strips, which strips to keep). Ran GMM strip assignment for all usable FOVs in a single processing loop. Visualised each FOV's GMM result (histogram + coloured scatter) for confirmation and sanity check
+
+    FOVs excluded: 1, 2, 3, 6, 7, 12, 13 [7] — generally due to missing strips, additional structures or bad strip mapping
+    FOVs retained: 4, 5, 8, 9, 10, 11 [6] — all with 3-strip structure, all strips kept.
+
+- FOV 3 excluded from this batch as it already has a separate fov3_strips.parquet from earlier work and has a fourth tissue section that is undetermined.
+
+- Final overview plot confirmed consistent strip colouring across all retained FOVs.
+- Saved s1_all_strips.parquet - ~400,000 transcripts across 6 FOVs. Had to clear attrs metadata (SpatialData Affine transform objects) before parquet serialisation.
+- fov_config dictionary serves as a reproducible record of all FOV selection decisions for the Methods section.
+
+**Design decisions**
+- Approach A (per-FOV analysis, not coordinate pooling): Run run_pair_analysis() separately per FOV per strip, then aggregate L(r) curves. This is methodologically cleaner than pooling coordinates across physically non-contiguous FOVs, which would violate the stationarity assumption of the K-function. Also provides replication (one L(r) curve per FOV) rather than a single pooled estimate.
+
+- run_pair_analysis() function added to notebook 03: Wraps the entire analysis loop (coord extraction → K/L computation → envelope) into a single function call. Returns a results dict. This was motivated by having run the same pattern three times (KRT8×KRT18, MALAT1×KRT18, KRT8×SCGB3A1) and prepares for the multi-FOV × multi-pair screening.
+
+- Strip labels (strip_1 = leftmost by x-coordinate) are assigned consistently via GMM ordering
