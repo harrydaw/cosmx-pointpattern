@@ -108,3 +108,8 @@ Selected KRT8 × SCGB3A1 as a second negative control pair. Biological rationale
 
 #### Up next:
 - Run LR checks across all 6 successful FOVs and rerun previous checks
+
+
+### 11/03/26 - Expanded L-R validation and controls
+- Extended L-R feasibility check to all_labelled (400,238 transcripts, 6 FOVs). Threshold remains n≥50 per gene per strip. Results: 199/203 L-R pairs viable in ≥1 strip, 146 viable across all three strips. Single-FOV sparsity was the limiting factor. Pair selection for notebook 08 to be driven by biological hypothesis, not data availability
+- 
