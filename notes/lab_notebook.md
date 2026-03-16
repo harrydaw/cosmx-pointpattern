@@ -112,4 +112,13 @@ Selected KRT8 × SCGB3A1 as a second negative control pair. Biological rationale
 
 ### 11/03/26 - Expanded L-R validation and controls
 - Extended L-R feasibility check to all_labelled (400,238 transcripts, 6 FOVs). Threshold remains n≥50 per gene per strip. Results: 199/203 L-R pairs viable in ≥1 strip, 146 viable across all three strips. Single-FOV sparsity was the limiting factor. Pair selection for notebook 08 to be driven by biological hypothesis, not data availability
-- 
+
+### 16/03/26
+- Following on from last week, I have clearly been able to incorporate accurate statistical anaylsis and generate a crude end-to-end pipeline but there are some clear violations of the basic assumptions of the model
+- Before I expand to wrap the gene x gene checks to search over a whole panel of interactions, I need to go back and tidy up the QC and data handling to be able to get stronger results
+- It's very hard to explain the figures as it stands, and hard to  make any conclusions, so I am reluctant to pass them onto my netowork analysis/modularity-maximisation steps before I sort out step 1
+- Current plan is to incorporate more options for window generations like spatstat
+- Current I just assign columns based on X coordinate distributions, but I want to expand to have polygonal and binary mask options
+- Better cleaning of the sparse regions + better tissue mapping would give the results a lot more weight, and mean that (at the very least) the homogeneity assumption wouldn't be so clearly violated
+- ^^ This is the goal for the week
+    - Get to the point where my figures and K and L-function are more explainable and the controls show what they are supposed to in a more obvious way
