@@ -115,11 +115,11 @@ cosmx_pointpattern/
 ### *[IN PROGRESS]*
 ### Phase 4 — Pipeline Improvement (08–09)
 
-**`08_improved_QC`** addresses rogue transcripts (non-tissue-associated points that inflate the bounding box). Uses DBSCAN density-based filtering per strip to classify tissue-core vs. noise transcripts. Includes before/after visualisation, parameter sensitivity analysis, and gene-level bias checks. Outputs `s1_all_strips_cleaned.parquet` with a noise flag column (no data deletion). [See scaffold below.](#08-improved-qc-scaffold)
+**`08_improved_QC`** addresses rogue transcripts (non-tissue-associated points that inflate the bounding box). Uses DBSCAN density-based filtering per strip to classify tissue-core vs. noise transcripts. Includes before/after visualisation, parameter sensitivity analysis, and gene-level bias checks. Outputs `s1_all_strips_cleaned.parquet` with a noise flag column (no data deletion). [See scaffold below.](#08-improved-qc---scaffold)
 
-**`09_window_functions`** replaces the rectangular bounding box with geometry-aware observation windows (convex hull, then alpha shape). Requires updating the edge correction in `bivariate_k()` for polygonal windows (Monte Carlo arc-in-polygon or analytical intersection). Includes regression tests against the rectangular case and re-running the three-part control framework with the new windows. [See scaffold below.](#09-window-functions-scaffold)
+**`09_window_functions`** replaces the rectangular bounding box with geometry-aware observation windows (convex hull, then alpha shape). Requires updating the edge correction in `bivariate_k()` for polygonal windows (Monte Carlo arc-in-polygon or analytical intersection). Includes regression tests against the rectangular case and re-running the three-part control framework with the new windows. [See scaffold below.](#09-window-functions---scaffold)
 
-## 08 Improved QC — Scaffold
+## 08 Improved QC - Scaffold
 
 1. **Visualise the problem.** Load `s1_all_strips.parquet`, plot raw scatter per FOV×strip, characterise rogue transcript patterns (isolated points, inter-strip scatter, FOV-edge artefacts).
 2. **Density-based filtering.** DBSCAN per strip on 2D coordinates. `eps` derived from nearest-neighbour distance distribution within tissue (e.g., a quantile of the kNN distances). `min_samples` tuned per-strip. Alternative: simple kNN distance threshold.
