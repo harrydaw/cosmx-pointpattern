@@ -112,7 +112,7 @@ cosmx_pointpattern/
 
 **`07_expanded_controls`** re-runs the control framework on the expanded 6-FOV panel and includes synthetic data validation. Identifies the core interpretability problem: bounding-box windows violate stationarity/isotropy assumptions, making results difficult to explain. Motivates the rollback to improve QC and window functions before proceeding to panel-wide screening.
 
-### *IN PROGRESS*
+### *[IN PROGRESS]*
 ### Phase 4 — Pipeline Improvement (08–09)
 
 **`08_improved_QC`** addresses rogue transcripts (non-tissue-associated points that inflate the bounding box). Uses DBSCAN density-based filtering per strip to classify tissue-core vs. noise transcripts. Includes before/after visualisation, parameter sensitivity analysis, and gene-level bias checks. Outputs `s1_all_strips_cleaned.parquet` with a noise flag column (no data deletion). [See scaffold below.](#08-improved-qc-scaffold)
