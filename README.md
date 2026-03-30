@@ -112,7 +112,8 @@ cosmx_pointpattern/
 
 **`07_expanded_controls`** re-runs the control framework on the expanded 6-FOV panel and includes synthetic data validation. Identifies the core interpretability problem: bounding-box windows violate stationarity/isotropy assumptions, making results difficult to explain. Motivates the rollback to improve QC and window functions before proceeding to panel-wide screening.
 
-### Phase 4 — Pipeline Improvement (08–09, in progress)
+### *IN PROGRESS*
+### Phase 4 — Pipeline Improvement (08–09)
 
 **`08_improved_QC`** addresses rogue transcripts (non-tissue-associated points that inflate the bounding box). Uses DBSCAN density-based filtering per strip to classify tissue-core vs. noise transcripts. Includes before/after visualisation, parameter sensitivity analysis, and gene-level bias checks. Outputs `s1_all_strips_cleaned.parquet` with a noise flag column (no data deletion). [See scaffold below.](#08-improved-qc-scaffold)
 
@@ -150,9 +151,9 @@ The permutation null shuffles gene labels while preserving spatial locations. It
 
 | Date | Milestone | Status |
 |---|---|---|
-| Mar 31 | End-to-end pipeline on S1 | Done — crude but functional |
+| Mar 31 | End-to-end pipeline on S1 | Done - crude but functional |
 | Apr 30 | Looping across datasets + network development | |
-| May 15 | FEATURE FREEZE — background + methods written | |
+| May 15 | FEATURE FREEZE - background + methods written | |
 | May 31 | Packaging, documentation, results finalised | |
 | Jun 3 | CODE FROZEN | |
 | Jul 16 | SUBMISSION | |
@@ -163,4 +164,4 @@ See `requirements.txt`. Core dependencies include: `numpy`, `scipy`, `pandas`, `
 
 ## Acknowledgements
 
-Dataset provided by the King's College London genomics group. Ligand-receptor annotations from [CellChatDB](https://github.com/sqjin/CellChat) (Jin et al., *Nature Communications*, 2021), accessed via [LIANA](https://github.com/saezlab/liana-py) (Dimitrov et al., *Nature Communications*, 2022).
+Dataset provided by the King's College London. Ligand-receptor annotations from [CellChatDB](https://github.com/sqjin/CellChat) (Jin et al., *Nature Communications*, 2021), accessed via [LIANA](https://github.com/saezlab/liana-py) (Dimitrov et al., *Nature Communications*, 2022).
