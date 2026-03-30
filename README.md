@@ -90,7 +90,7 @@ cosmx_pointpattern/
 
 ## Notebook Guide
 
-### Phase 1 — Data Loading & Strip Assignment (01–02b)
+### Phase 1 - Data Loading & Strip Assignment (01–02b)
 
 **`01_load_data`** loads the full CosMx dataset via SpatialData, characterises the 4-slide structure, identifies S1 as the primary analysis target, and documents the cell assignment failure that motivates the segmentation-free approach.
 
@@ -98,7 +98,7 @@ cosmx_pointpattern/
 
 **`02b_strip_assignment_all_fovs`** extends strip assignment to all 13 S1 FOVs via a two-pass QC pipeline: visual inspection of each FOV, then GMM assignment with per-FOV decisions recorded in a `fov_config` dictionary. 6 FOVs retained (~400k transcripts), 7 excluded. Output: `s1_all_strips.parquet`.
 
-### Phase 2 — K-Function Development & Validation (03–05)
+### Phase 2 - K-Function Development & Validation (03–05)
 
 **`03_K_function`** defines all core statistical functions. Includes the identification and fix of a critical edge correction bug (additive arc fractions → correct Ripley's isotropic correction). Validated on synthetic CSR data: max |L(r)| < 13 post-fix vs. 195–445 pre-fix.
 
@@ -106,14 +106,14 @@ cosmx_pointpattern/
 
 **`05_negative_controls`** runs two negative controls. MALAT1 × KRT18: high raw L(r) but inside envelope (ubiquitous housekeeping gene, tissue geometry only). KRT8 × SCGB3A1: same result (different epithelial lineages, but spatially interleaved). Key insight: in narrow strips, raw L(r) magnitude is dominated by geometry; only the permutation envelope discriminates gene-specific signal.
 
-### Phase 3 — Panel Expansion & Feasibility (06–07)
+### Phase 3 - Panel Expansion & Feasibility (06–07)
 
 **`06_LR_checks`** cross-references the CosMx gene panel against CellChatDB (1,912 curated L-R pairs). Single-FOV analysis is infeasible at the n≥50 threshold. Multi-FOV expansion to 6 FOVs yields 199/203 L-R pairs viable in at least one strip, 146 across all three strips.
 
 **`07_expanded_controls`** re-runs the control framework on the expanded 6-FOV panel and includes synthetic data validation. Identifies the core interpretability problem: bounding-box windows violate stationarity/isotropy assumptions, making results difficult to explain. Motivates the rollback to improve QC and window functions before proceeding to panel-wide screening.
 
 ### *[IN PROGRESS]*
-### Phase 4 — Pipeline Improvement (08–09)
+### Phase 4 - Pipeline Improvement (08–09)
 
 **`08_improved_QC`** addresses rogue transcripts (non-tissue-associated points that inflate the bounding box). Uses DBSCAN density-based filtering per strip to classify tissue-core vs. noise transcripts. Includes before/after visualisation, parameter sensitivity analysis, and gene-level bias checks. Outputs `s1_all_strips_cleaned.parquet` with a noise flag column (no data deletion). [See scaffold below.](#08-improved-qc---scaffold)
 
@@ -127,7 +127,7 @@ cosmx_pointpattern/
 4. **Sensitivity analysis.** Vary `eps` ± 20%, report transcript loss. Stable results strengthen the case.
 5. **Save output.** `s1_all_strips_cleaned.parquet` with `is_noise` flag column. Document all parameters.
 
-## 09 Window Functions — Scaffold
+## 09 Window Functions - Scaffold
 
 1. **Implement convex hull window** via `scipy.spatial.ConvexHull`. Refactor `get_window()` to return a window object with type and geometry metadata.
 2. **Implement alpha shape window** via `alphashape` or Delaunay triangulation. Tune alpha parameter per strip.
