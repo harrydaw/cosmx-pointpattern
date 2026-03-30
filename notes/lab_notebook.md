@@ -122,3 +122,23 @@ Selected KRT8 × SCGB3A1 as a second negative control pair. Biological rationale
 - Better cleaning of the sparse regions + better tissue mapping would give the results a lot more weight, and mean that (at the very least) the homogeneity assumption wouldn't be so clearly violated
 - ^^ This is the goal for the week
     - Get to the point where my figures and K and L-function are more explainable and the controls show what they are supposed to in a more obvious way
+
+
+### 30/03/26 - Documentation reset and planning
+
+**Project review and scaffolding**
+- Reviewed full project state: weeks 1–5 summary, all notebook purposes, function inventory, outstanding assumptions violations
+- Core issue remains: bounding-box window inflates |W|, distorts λ, and makes L(r) results hard to interpret. Rogue transcripts outside tissue compound this by pulling the box further from true tissue geometry. Must fix QC (08) before fixing windows (09) - cleaning is a prerequisite for window fitting.
+
+**Scaffolded notebooks 08 and 09:**
+- 08_improved_QC: density-based rogue transcript removal via DBSCAN per strip. Key steps: visualise the noise, filter, before/after comparison, sensitivity check, save with `is_noise` flag column. Must check for gene-level bias in removed transcripts (if low-abundance signalling genes are disproportionately removed, we've introduced systematic bias into the L-R screening).
+- 09_window_functions: replace rectangular bounding box with convex hull (first) then alpha shape, then push for a binary mask via kernel density. Requires new edge correction for polygonal windows - Monte Carlo arc-in-polygon approach first, validate against rectangular ground truth, then synthetic CSR on polygon. Re-run three-part control framework to compare old vs new windows. Ideally upgrade to arc-intersection analytics for optimum accuracy. 
+
+**README overhaul**
+- Rewrote README.md with full project context, notebook guide, function reference, updated file tree, control framework table, and 08/09 scaffolds
+- Old README was a placeholder from week 1 — new version reflects actual project state and is suitable for supervisor/examiner review
+
+#### Up next (tomorrow):
+- Begin 08_improved_QC implementation
+- Step 1: load s1_all_strips.parquet, raw scatter plots per FOV×strip to characterise the noise
+- Step 2: DBSCAN implementation - need to decide on eps derivation strategy (kNN distance quantile vs. manual)
