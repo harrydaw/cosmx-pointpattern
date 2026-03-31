@@ -142,3 +142,22 @@ Selected KRT8 × SCGB3A1 as a second negative control pair. Biological rationale
 - Begin 08_improved_QC implementation
 - Step 1: load s1_all_strips.parquet, raw scatter plots per FOV×strip to characterise the noise
 - Step 2: DBSCAN implementation - need to decide on eps derivation strategy (kNN distance quantile vs. manual)
+
+### 31/03/26 - Notebook 08: Rogue transcript QC via DBSCAN
+**The core problem**
+Rogue transcripts far from the tissue inflate this box, which violates the homogeneity assumption of K/L and makes my edge correction unreliable - the window includes empty space that isn't really observation area, deflating my intensity estimate λ and biasing K(r) upward. Ensuring that the window is tight to the tissue border, and includes only informative gene transcripts will better produce interpretable results.
+
+- Loaded s1_all_strips.parquet (400,238 transcripts, 6 FOVs × 3 strips)
+- Visualised raw scatter — noise is diffuse/uniform across all FOVs, not concentrated
+- Computed 1-NN distance distributions per strip. Medians 1.4–2.0 px (tissue bulk), long tail to ~150 px (noise)
+- Tested fixed eps (15, 30, 45) — eps=30 performed best across strip densities
+- Tested adaptive eps via p95, p97, p99 of 1-NN. p95 too aggressive (shredded tissue edges on dense strips), p99 too lenient (missed noise on sparse strips), p97 best compromise
+- Tested k=5 NN for eps derivation (matching min_samples) — eps inflated to 70+, <1% removal. Rejected.
+- Final method: adaptive 1-NN p97, clipped to [20, 30]. Floor prevents over-trimming dense strips, ceiling prevents leniency on sparse strips
+- Built `dbscan_noise_filter()` — generalisable function with tunable percentile, floor, ceiling, group_cols, diagnostic toggle. Flags points (`is_noise`) without removing. Records `eps_raw` and `eps_used` per group for audit trail.
+- Result: 27,313 flagged as noise (6.8%), 372,925 retained
+- Saved `s1_all_strips_noise_flagged.parquet`
+
+#### Tomorrow:
+- Begin notebook 09: improved window bounding (polygonal/convex hull) on cleaned data
+- Re-run controls on filtered data to check impact on L(r) interpretability
