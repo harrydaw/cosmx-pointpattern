@@ -190,6 +190,15 @@ Rogue transcripts far from the tissue inflate this box, which violates the homog
 After review, decided not to fix the absolute calibration and instead document it as a known limitation. Rationale: the permutation test is robust to consistent estimator bias — both observed K and all permuted realisations use the same fixed hull and same edge correction, so the bias cancels in the relative comparison. Controls confirm the test is discriminating correctly. A limitation note has been added to the bottom of nb09. Absolute L(r) values are not to be interpreted; only envelope-relative significance is used.
 
 #### Tomorrow:
-- Refactor `get_window()` (in nb03) to accept `window_type` argument: `'rect'` (existing), `'hull'` (wraps get_convex_hull), `'custom'` (imports GeoJSON polygon via new `load_custom_window()` helper)
-- Build `10_window_comparison_all_fovs.ipynb`: clean three-way window comparison across all 6 S1 FOVs × 3 strips, side-by-side L(r) curves for rect vs hull on KRT8 x KRT18
-- After that: proceed directly to L-R screening (nb11) and network construction (nb12)
+**Design correction — nb09 hull functions are redundant and should be removed.**
+`bivariate_k_hull`, `compute_envelope_hull`, and `run_pair_analysis_hull` are unnecessary duplicates. The right design is:
+- `get_window(df, window_type='rect'|'hull'|'custom')` returns either a rect tuple or a Shapely Polygon
+- `bivariate_k()`, `compute_envelope()`, `run_pair_analysis()` each gain internal dispatch: if window is a tuple → existing rect logic; if window is a Shapely Polygon → hull logic (fraction_inside_hull, hull.area for λ)
+- `get_convex_hull()` and `fraction_inside_hull()` from nb09 are kept as the low-level building blocks, but the `_hull` wrappers are deleted
+
+Action plan:
+1. Refactor `get_window()` in nb03 to accept `window_type` arg (`'rect'`, `'hull'`, `'custom'`); add `load_custom_window(filepath)` GeoJSON helper
+2. Update `bivariate_k()`, `compute_envelope()`, `run_pair_analysis()` in nb03 to dispatch on window type internally
+3. Delete `bivariate_k_hull`, `compute_envelope_hull`, `run_pair_analysis_hull` cells from nb09 — keep only `get_convex_hull` and `fraction_inside_hull`
+4. Build `10_window_comparison_all_fovs.ipynb` using the unified interface
+5. All downstream notebooks (L-R screening, network) use the single `run_pair_analysis()` call with `window_type='hull'`
