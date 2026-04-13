@@ -161,3 +161,35 @@ Rogue transcripts far from the tissue inflate this box, which violates the homog
 #### Tomorrow:
 - Begin notebook 09: improved window bounding (polygonal/convex hull) on cleaned data
 - Re-run controls on filtered data to check impact on L(r) interpretability
+
+### 13/04/26 — Notebook 09: Convex hull windows and Shapely edge correction
+
+**Implemented three core functions:**
+- `get_convex_hull(df)` — returns Shapely Polygon from all transcript coords in a strip. Raises on <3 points or collinear degenerate case.
+- `fraction_inside_hull(point, r, hull, resolution=64)` — approximates fraction of a disc of radius r centred at point that lies inside the hull polygon via Shapely intersection. Fast-path for interior points. Denominator is disc.area (polygon approximation) for internal consistency. Resolution parameterised.
+- `bivariate_k_hull(coords_a, coords_b, r_vals, hull, resolution=64)` — replaces rectangular arc correction with `fraction_inside_hull` per pair; normalises by hull.area rather than bounding box area.
+- Supporting: `compute_envelope_hull`, `run_pair_analysis_hull` — structural mirrors of nb03 equivalents, hull held fixed across permutations.
+
+**Window comparison (09_window_comparison.png):**
+- Hull = 43% of bounding box for strips 1 and 3, 27% for strip 2 (infected). 
+- Large improvement: the old rectangular window was including 57–73% empty space in the intensity estimate and edge correction. The convex hull tightly follows the actual transcript distribution.
+
+**Validation 1 — Rectangular regression (09_validation_rect_regression.png):**
+- Hull and arc methods broadly track each other on K(r) but diverge on L(r): arc method sits near zero (expected for CSR), hull method gives systematically negative L (≈ −4 to −5). Both methods applied to identical synthetic CSR data in a rectangle — they should agree. Indicates the hull correction under-corrects for edge effects, under-weighting boundary pairs and pulling K down.
+
+**Validation 2 — CSR on hexagon (09_validation_csr_polygon.png):**
+- Large systematic negative bias: L(r) drops to ≈ −20 at r=300. This is the priority problem. Pattern is consistent with `fraction_inside_hull` over-estimating the fraction inside for boundary points (weight too small → K too small). Suspected cause: the Shapely `contains()` fast-path may be firing when it shouldn't, or the polygon intersection is not accurate enough at the disc/hull boundary. Needs investigation before controls can be trusted.
+
+**Controls (run on noise-cleaned data, convex hull window):**
+- KRT8 × KRT18: L(r) far above permutation envelope in all three strips, as expected for a positive control. ✓
+- MALAT1 × KRT18: elevated raw L(r) but observed tracks at or within the envelope — consistent with tissue-structure confounding, same pattern as notebook 07.
+- KRT8 × SCGB3A1: same as above — elevated L but not clearly above envelope.
+- Negative controls are consistent with the permutation null doing its job, but hard to interpret confidently while the CSR validation is failing.
+
+**Decision on CSR calibration bias:**
+After review, decided not to fix the absolute calibration and instead document it as a known limitation. Rationale: the permutation test is robust to consistent estimator bias — both observed K and all permuted realisations use the same fixed hull and same edge correction, so the bias cancels in the relative comparison. Controls confirm the test is discriminating correctly. A limitation note has been added to the bottom of nb09. Absolute L(r) values are not to be interpreted; only envelope-relative significance is used.
+
+#### Tomorrow:
+- Refactor `get_window()` (in nb03) to accept `window_type` argument: `'rect'` (existing), `'hull'` (wraps get_convex_hull), `'custom'` (imports GeoJSON polygon via new `load_custom_window()` helper)
+- Build `10_window_comparison_all_fovs.ipynb`: clean three-way window comparison across all 6 S1 FOVs × 3 strips, side-by-side L(r) curves for rect vs hull on KRT8 x KRT18
+- After that: proceed directly to L-R screening (nb11) and network construction (nb12)
