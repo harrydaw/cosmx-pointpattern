@@ -34,33 +34,34 @@ The pipeline works as follows:
 | **Layout** | 4 stitched slides (S1–S4); each slide has 3 tissue strips: control / infected / control |
 | **Total transcripts** | ~2.66 million across all slides; 710,751 in S1 (primary analysis slide) |
 | **Gene panel** | 1,000 targets + 78 SystemControl probes (~1,078 unique per FOV) |
-| **FOVs** | 63 total (4 missing); 6 retained in S1 after QC (~400,000 transcripts) |
+| **FOVs** | 63 total (4 missing); up to 12 usable in S1 (expanded from original 6 in 02c) |
 | **Coordinates** | Global pixel coordinates used exclusively (`x_global_px`, `y_global_px`) |
 | **Slide quality** | S1 > S3 > S2/S4 |
 
 ## Key Functions
 
-### Rectangular window (notebook 03)
+### Core statistical functions (notebooks 03, 09a)
 
 | Function | Description |
 |---|---|
 | `get_coords(df, gene)` | Extract (N, 2) coordinate array for a given gene |
-| `get_window(df, window_type='rect')` | Compute observation window; dispatches to rect, hull, or custom |
-| `bivariate_k(coords_a, coords_b, r_vals, window)` | Cross-type Ripley's K with rectangular isotropic edge correction |
+| `get_window(df, window_type='hull', custom_path=None)` | Return observation window; `'rect'` → tuple, `'hull'` → Shapely Polygon, `'custom'` → loaded polygon |
+| `load_custom_window(path)` | Load a user-drawn polygon from JSON (saved by `draw_custom_window` in 09b) |
+| `bivariate_k(coords_a, coords_b, r_vals, window, resolution=64)` | Cross-type Ripley's K; dispatches internally on window type (tuple → arc correction, Polygon → Shapely intersection correction) |
 | `k_to_l(k_vals, r_vals)` | Variance-stabilising transform: L(r) = √(K(r)/π) − r |
-| `compute_envelope(coords_a, coords_b, r_vals, window, n_sim=99)` | Pointwise permutation envelope |
-| `run_pair_analysis(strip_df, gene_a, gene_b, r_vals)` | Full pipeline wrapper for one gene pair on one strip |
+| `compute_envelope(coords_a, coords_b, r_vals, window, n_sim=99)` | Pointwise permutation envelope; window type passed through to `bivariate_k` |
+| `run_pair_analysis(strip_df, gene_a, gene_b, r_vals, window_type='hull', custom_path=None)` | Full pipeline wrapper; single entry point regardless of window type |
 | `plot_diagnostics(coords_a, coords_b, window, gene_a, gene_b)` | Scatter plot with window overlay |
 
-### Convex hull window (notebook 09)
+### Low-level building blocks (notebook 09, re-used by 09a)
 
 | Function | Description |
 |---|---|
 | `get_convex_hull(df)` | Shapely Polygon convex hull of all transcript coordinates in a strip |
-| `fraction_inside_hull(point, r, hull, resolution=64)` | Edge correction weight: fraction of disc at radius r inside hull polygon |
-| `bivariate_k_hull(coords_a, coords_b, r_vals, hull)` | K-function with Shapely-based polygon edge correction; normalises by hull.area |
-| `compute_envelope_hull(coords_a, coords_b, r_vals, hull, n_sim=99)` | Permutation envelope using hull-aware K estimator |
-| `run_pair_analysis_hull(strip_df, gene_a, gene_b, r_vals)` | Full pipeline wrapper using convex hull window |
+| `fraction_inside_hull(point, r, hull, resolution=64)` | Edge correction weight: fraction of disc of radius r inside hull polygon |
+| `draw_custom_window(strip_df, save_path, ...)` | Interactive polygon drawing tool; saves result as JSON (notebook 09b) |
+
+**Window dispatch:** `bivariate_k`, `compute_envelope`, and `run_pair_analysis` all accept a `window` object (tuple or Shapely Polygon). `get_window` is the single point of control for window type selection. The `_hull`-suffixed variants from nb09 are superseded by the unified functions in nb09a.
 
 **Edge correction note:** `fraction_inside_hull` introduces a small systematic negative bias in absolute K(r). This bias is consistent across observed and permuted realisations and cancels in the permutation test. Absolute L(r) values are not interpreted directly; only envelope-relative significance is used.
 
@@ -73,15 +74,18 @@ cosmx_pointpattern/
 │   ├── raw/                        # Original CosMx files (.zarr) — never modified
 │   └── processed/
 │       ├── fov3_strips.parquet                    # FOV 3 with GMM strip labels (early work)
-│       ├── s1_all_strips.parquet                  # 6 FOVs × 3 strips, ~400k transcripts
-│       ├── s1_all_strips_noise_flagged.parquet    # Cleaned data with is_noise flag (nb08 output)
-│       ├── viable_lr_pairs_all_strips.parquet     # 146 viable CellChatDB L-R pairs with strip counts
-│       └── s1_lr_screening_results.parquet        # (planned nb11 output) per-pair co-localisation scores
+│       ├── s1_all_strips.parquet                        # 6 FOVs × 3 strips, ~400k transcripts (02b)
+│       ├── s1_all_strips_noise_flagged.parquet          # Cleaned data with is_noise flag (nb08)
+│       ├── s1_expanded_strips.parquet                   # All usable FOVs, strip-assigned (02c)
+│       ├── s1_expanded_strips_noise_flagged.parquet     # Expanded + DBSCAN QC (02c) — primary input from 09a onwards
+│       ├── custom_window_strip_[1-3].json               # User-drawn polygons per strip (nb09b)
+│       ├── viable_lr_pairs_all_strips.parquet           # 146 viable CellChatDB L-R pairs with strip counts
+│       └── s1_lr_screening_results.parquet              # (planned nb11 output) per-pair co-localisation scores
 │
 ├── notebooks/
 │   ├── 01_load_data.ipynb
 │   ├── 02_fov3_exploration.ipynb
-│   ├── 02b_strip_assignment_all_fovs.ipynb
+│   ├── 02c_fov_review_and_expansion.ipynb
 │   ├── 03_K_function.ipynb
 │   ├── 04_real_analysis.ipynb
 │   ├── 05_negative_controls.ipynb
@@ -89,9 +93,11 @@ cosmx_pointpattern/
 │   ├── 07_expanded_controls.ipynb
 │   ├── 08_improved_QC.ipynb
 │   ├── 09_improved_windows_and_edge_correction.ipynb
-│   ├── 10_window_comparison_all_fovs.ipynb        # [planned] rect vs hull vs custom, all FOVs
-│   ├── 11_lr_screening.ipynb                      # [planned] loop over 146 L-R pairs
-│   └── 12_network_modularity.ipynb                # [planned] community detection, infection signalling
+│   ├── 09a_unified_window_api.ipynb               # unified get_window / bivariate_k / run_pair_analysis
+│   ├── 09b_custom_window_drawing.ipynb            # interactive polygon drawing tool
+│   ├── 09c_window_comparison.ipynb                # rect vs hull vs custom, visual + L(r) comparison
+│   ├── 10_lr_panel_and_network.ipynb              # [planned] L-R screening + network analysis
+│   └── 11_network_modularity.ipynb                # [planned] community detection, infection signalling
 │
 ├── src/
 │   └── spatialco/                  # Python package (extraction planned after nb12)
@@ -117,7 +123,7 @@ cosmx_pointpattern/
 
 **`02_fov3_exploration`** narrows to FOV 3 on Slide 1. Visualises x-coordinate distributions to identify the three tissue strips. Initial GMM-based strip separation.
 
-**`02b_strip_assignment_all_fovs`** extends strip assignment to all 13 S1 FOVs via a two-pass QC pipeline. 6 FOVs retained (~400k transcripts), 7 excluded. Output: `s1_all_strips.parquet`.
+**`02c_fov_review_and_expansion`** revisits the 7 excluded FOVs from 02b. Visual review (scatter + x-histogram) of each excluded FOV with a user-editable `fov_config` dictionary. Re-runs GMM strip assignment for newly included FOVs, merges with existing data and FOV3 (from its separate parquet), then re-runs DBSCAN QC on the full expanded dataset. Outputs: `s1_expanded_strips.parquet` and `s1_expanded_strips_noise_flagged.parquet`.
 
 ### Phase 2 — K-Function Development & Validation (03–07)
 
@@ -135,15 +141,19 @@ cosmx_pointpattern/
 
 **`08_improved_QC`** ✅ Removes rogue transcripts via adaptive DBSCAN (1-NN p97, clipped to [20, 30] px). 27,313 flagged as noise (6.8%), 372,925 retained. Output: `s1_all_strips_noise_flagged.parquet`.
 
-**`09_improved_windows_and_edge_correction`** ✅ Replaces rectangular bounding box with convex hull windows (43% of bounding box area for control strips, 27% for infected strip). Implements Shapely-based polygon edge correction. Re-runs three-part control framework on cleaned data — controls behave as expected under permutation envelope. Includes documented limitation on absolute K(r) calibration (bias cancels in permutation test).
+**`09_improved_windows_and_edge_correction`** ✅ Replaces rectangular bounding box with convex hull windows (43% of bounding box area for control strips, 27% for infected strip). Implements Shapely-based polygon edge correction. Re-runs three-part control framework on cleaned data — controls behave as expected under permutation envelope. Includes documented limitation on absolute K(r) calibration (bias cancels in permutation test). Note: this notebook defines `_hull`-suffixed variants that are superseded by the unified API in 09a.
 
-### Phase 4 — Screening & Network (10–12) *[Planned]*
+**`09a_unified_window_api`** ✅ Consolidates the `_hull`-suffixed functions from nb09 into a unified API. `get_window(df, window_type, custom_path)` returns a tuple (rect) or Shapely Polygon (hull/custom). `bivariate_k`, `compute_envelope`, and `run_pair_analysis` dispatch internally on window type — no `_hull` variants. Uses `s1_expanded_strips_noise_flagged.parquet`. Re-runs controls to confirm parity with nb09.
 
-**`10_window_comparison_all_fovs`** Three-way window comparison (rect, hull, custom GeoJSON) across all 6 FOVs × 3 strips. Adds `get_window(window_type=...)` unified entry point and `load_custom_window()` GeoJSON importer.
+**`09b_custom_window_drawing`** ✅ Interactive polygon drawing tool (`draw_custom_window`) using `matplotlib.widgets.PolygonSelector`. User draws a polygon on top of the transcript scatter for each strip; result auto-saved as JSON. Per-strip cells for strip_1, strip_2, strip_3. Requires `ipympl` (`pip install ipympl`).
 
-**`11_lr_screening`** Loops over 146 viable L-R pairs, runs `run_pair_analysis_hull` per strip, saves co-localisation scores and envelope significance. Output: `s1_lr_screening_results.parquet`.
+**`09c_window_comparison`** ✅ Three-way visual and L(r) comparison: rectangular bounding box vs convex hull vs user-drawn custom polygon. Overlay figures, area table, and L(r) comparison plots for the positive and negative controls.
 
-**`12_network_modularity`** Builds co-localisation graph (nodes = genes, edges = significant pairs), runs Louvain/Leiden community detection, compares infected vs control strip community structure to identify infection-specific signalling programmes.
+### Phase 4 — Screening & Network (10–11) *[Planned]*
+
+**`10_lr_panel_and_network`** Loops over 146 viable L-R pairs using the unified `run_pair_analysis` with `window_type='hull'`, saves per-pair co-localisation scores and envelope significance. Builds co-localisation graph and runs community detection.
+
+**`11_network_modularity`** Detailed network analysis: Louvain/Leiden community structure, comparison of infected vs control strip communities, identification of infection-specific signalling programmes.
 
 ## Control Framework
 
@@ -161,7 +171,8 @@ The permutation null shuffles gene labels while preserving spatial locations. It
 |---|---|---|
 | Mar 31 | End-to-end pipeline on S1 | ✅ Done |
 | Apr 13 | DBSCAN QC + convex hull windows + controls re-run | ✅ Done |
-| Apr 30 | Window finalisation + L-R screening + network development | In progress |
+| Apr 14 | FOV expansion (02c) + unified window API (09a) + custom drawing tool (09b) + window comparison (09c) | ✅ Done |
+| Apr 30 | L-R panel screening + network analysis (nb10–11) | In progress |
 | May 15 | FEATURE FREEZE — background + methods written | |
 | May 31 | Packaging, documentation, results finalised | |
 | Jun 3 | CODE FROZEN | |

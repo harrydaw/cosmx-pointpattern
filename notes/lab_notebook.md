@@ -202,3 +202,68 @@ Action plan:
 3. Delete `bivariate_k_hull`, `compute_envelope_hull`, `run_pair_analysis_hull` cells from nb09 — keep only `get_convex_hull` and `fraction_inside_hull`
 4. Build `10_window_comparison_all_fovs.ipynb` using the unified interface
 5. All downstream notebooks (L-R screening, network) use the single `run_pair_analysis()` call with `window_type='hull'`
+---
+
+### 14/04/26
+
+#### FOV expansion (02c)
+Revisited the 7 excluded FOVs from 02b. Decision to expand to all usable FOVs to get
+complete tissue coverage top to bottom — partial tissue sections are not viable for
+the L-R screening. Created `02c_fov_review_and_expansion.ipynb`:
+
+- **Section 1:** Visual review grid (scatter + x-histogram) for excluded FOVs 1, 2, 6, 7, 12.
+  FOV 13 excluded without review (7,878 transcripts, confirmed spatial outlier).
+- **Section 2:** `fov_config` dictionary — user updates based on visual inspection before
+  running the GMM loop. Default all set to `True`.
+- **Section 3:** Per-FOV GMM strip assignment (3 components on local x), confirmation plots.
+- **Section 4:** Merge with `s1_all_strips.parquet` and `fov3_strips.parquet` (trimmed to
+  13-column schema to drop `strip_confidence`/`strip_ambiguous`). Outputs
+  `s1_expanded_strips.parquet`.
+- **Section 5:** DBSCAN noise filtering (same parameters as nb08: 1-NN p97, [20, 30] px).
+  Outputs `s1_expanded_strips_noise_flagged.parquet`. Function copied inline rather than
+  via `%run 08` to avoid re-running exploratory cells; returns `(result, summary)` to
+  enable comparison against nb08 baseline (6.8% noise, 6 FOVs).
+- **Section 6:** Overview plot of all included FOVs coloured by strip.
+
+**FOV3 note:** included from its existing `fov3_strips.parquet`. The "fourth tissue section"
+identified in 02b will be handled per-analysis using the custom window in 09b — there is no
+need to exclude FOV3 from the dataset.
+
+#### Unified window API (09a)
+Implemented the design correction noted yesterday. Created `09a_unified_window_api.ipynb`:
+
+- Defines `get_window(df, window_type, custom_path)` — returns tuple ('rect') or
+  Shapely Polygon ('hull'/'custom').
+- `bivariate_k`, `compute_envelope`, `run_pair_analysis` all dispatch internally on
+  `isinstance(window, tuple)`. The `_hull`-suffixed variants from nb09 are eliminated —
+  their logic lives inside the unified functions.
+- `load_custom_window(path)` loads a polygon from JSON (saved by 09b).
+- `plot_diagnostics` updated to handle both tuple and Polygon windows.
+- Dispatch unit check: asserts return types from `get_window` for each `window_type`.
+- Control verification re-run with `window_type='hull'` on expanded dataset.
+
+#### Custom window drawing tool (09b)
+Created `09b_custom_window_drawing.ipynb` with `draw_custom_window(strip_df, save_path, ...)`:
+- Renders transcript scatter with convex hull as dashed reference.
+- `matplotlib.widgets.PolygonSelector` for interactive polygon drawing.
+- `onselect` callback auto-saves as JSON `{'strip': ..., 'vertices': [[x, y], ...]}` on close.
+- Per-strip drawing cells for strips 1, 2, 3. Each followed by a verification cell.
+- Summary plot showing all three custom windows alongside hulls.
+- `ipympl` (0.10.0) installed to `.venv` for `%matplotlib widget` support.
+
+#### Window comparison (09c)
+Created `09c_window_comparison.ipynb`:
+- `%run 09a_unified_window_api.ipynb` brings all unified functions into scope.
+- **Section 1:** Three-panel visual overlay (rect / hull / custom) per strip.
+- **Section 2:** Area comparison table saved to CSV.
+- **Section 3 / 4:** L(r) comparison for KRT8×KRT18 and MALAT1×KRT18.
+  Parameter `INDEPENDENT_ENVELOPES = True` controls whether each window type gets
+  its own permutation envelope (default) or shares the hull envelope.
+
+#### README
+Updated: Key Functions table now shows unified API; `_hull` variants removed. Notebook
+guide updated for 02c, 09a, 09b, 09c. Data file list updated with expanded parquets.
+Milestones: "Window finalisation" marked done (14 Apr).
+
+#### Next
+L-R panel and network analysis (nb10).
