@@ -190,8 +190,8 @@ def main() -> None:
         help="Path to s1_all_strips_cleaned.parquet",
     )
     parser.add_argument(
-        "--lr", required=True,
-        help="Path to lr_panel_index.json",
+        "--lr", required=False, default=None,
+        help="Path to lr_panel_index.json (required unless --pair and --strip are both given)",
     )
     parser.add_argument(
         "--fns", required=True,
@@ -220,11 +220,25 @@ def main() -> None:
     parser.add_argument(
         "--strips",
         default="strip_1,strip_2,strip_3",
-        help="Comma-separated list of strips to include (default: all three)",
+        help="Comma-separated list of strips to include (default: all three). Ignored if --strip is given.",
+    )
+    parser.add_argument(
+        "--pair", default=None,
+        help="Single 'LIGAND,RECEPTOR' tuple. With --strip, runs exactly one job and skips the LR index.",
+    )
+    parser.add_argument(
+        "--strip", default=None,
+        help="Single strip name (e.g. strip_2). With --pair, runs exactly one job and skips the LR index.",
     )
     args = parser.parse_args()
 
-    strips = [s.strip() for s in args.strips.split(",")]
+    single_job_mode = args.pair is not None and args.strip is not None
+    if (args.pair is None) ^ (args.strip is None):
+        parser.error("--pair and --strip must be given together")
+    if not single_job_mode and args.lr is None:
+        parser.error("--lr is required unless --pair and --strip are both given")
+
+    strips = [args.strip] if single_job_mode else [s.strip() for s in args.strips.split(",")]
 
     # -- Load functions -------------------------------------------------------
     print("=" * 60)
@@ -243,12 +257,6 @@ def main() -> None:
     genes_in_data = set(clean["target"].unique())
     print(f"  Clean transcripts: {len(clean):,}  |  Unique genes: {len(genes_in_data)}")
 
-    # -- Load LR index --------------------------------------------------------
-    print("\nLoading LR index from:", args.lr)
-    with open(args.lr) as f:
-        lr_index = json.load(f)
-    print(f"  Pairs in index: {len(lr_index)}")
-
     # -- Load r_vals ----------------------------------------------------------
     print("\nLoading r_vals from:", args.r_vals)
     r_vals = np.load(args.r_vals)
@@ -256,7 +264,21 @@ def main() -> None:
         raise ValueError(f"r_vals must be 1-D with >=2 entries, got shape {r_vals.shape}")
 
     # -- Build job list -------------------------------------------------------
-    jobs = build_job_list(lr_index, genes_in_data, strips)
+    if single_job_mode:
+        try:
+            lig, rec = [t.strip() for t in args.pair.split(",")]
+        except ValueError:
+            raise ValueError(f"--pair must be 'LIGAND,RECEPTOR', got {args.pair!r}")
+        for g in (lig, rec):
+            if g not in genes_in_data:
+                raise ValueError(f"Gene {g!r} not present in cleaned data")
+        jobs = [(lig, rec, args.strip)]
+    else:
+        print("\nLoading LR index from:", args.lr)
+        with open(args.lr) as f:
+            lr_index = json.load(f)
+        print(f"  Pairs in index: {len(lr_index)}")
+        jobs = build_job_list(lr_index, genes_in_data, strips)
     print(f"\nJobs to run: {len(jobs)}")
     print(f"  r_vals: {len(r_vals)} points, {r_vals[0]:.1f} -> {r_vals[-1]:.1f} px")
     print(f"  n_sim:  {args.n_sim}")
