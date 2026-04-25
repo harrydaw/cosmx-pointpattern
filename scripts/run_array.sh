@@ -5,7 +5,7 @@
 # results/hpc_job_manifest.csv (skipping the header). Idempotent: skips
 # tasks whose output parquet already exists.
 #
-# Submit full panel (438 jobs, max 5 concurrent):
+# Submit full panel (438 jobs, max 2 concurrent — KCL cluster cap):
 #     sbatch scripts/run_array.sh
 #
 # Submit a small test (first 5 jobs only):
@@ -16,7 +16,7 @@
 
 #SBATCH --job-name=cosmx_arr
 #SBATCH --partition=msc_appbio
-#SBATCH --array=1-438%5
+#SBATCH --array=1-438%2
 #SBATCH --time=04:00:00
 #SBATCH --mem=4G
 #SBATCH --cpus-per-task=1
