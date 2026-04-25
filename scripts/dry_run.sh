@@ -23,7 +23,7 @@ source .venv/bin/activate
 mkdir -p results/per_pair logs
 
 python scripts/batch_k_analysis.py \
-    --data    data/processed/s1_all_strips_noise_flagged.parquet \
+    --data    data/processed/s1_all_strips_cleaned.parquet \
     --fns     notebooks/00_functions.ipynb \
     --r_vals  data/processed/r_vals.npy \
     --pair    "KRT8,KRT18" \
