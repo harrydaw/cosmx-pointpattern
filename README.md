@@ -80,7 +80,7 @@ cosmx_pointpattern/
 │       ├── s1_expanded_strips_noise_flagged.parquet     # Expanded + DBSCAN QC (02c) — primary input from 09a onwards
 │       ├── custom_window_strip_[1-3].json               # User-drawn polygons per strip (nb09b)
 │       ├── viable_lr_pairs_all_strips.parquet           # 146 viable CellChatDB L-R pairs with strip counts
-│       └── s1_lr_screening_results.parquet              # (planned nb11 output) per-pair co-localisation scores
+│       └── lr_panel_results.parquet                     # HPC L-R screening output (aggregated per-pair scores)
 │
 ├── notebooks/
 │   ├── 01_load_data.ipynb
@@ -88,7 +88,7 @@ cosmx_pointpattern/
 │   ├── 02c_fov_review_and_expansion.ipynb
 │   ├── 03_K_function.ipynb
 │   ├── 04_real_analysis.ipynb
-│   ├── 05_negative_controls.ipynb
+│   ├── 05_negative_control_validation.ipynb
 │   ├── 06_LR_checks.ipynb
 │   ├── 07_expanded_controls.ipynb
 │   ├── 08_improved_QC.ipynb
@@ -96,8 +96,8 @@ cosmx_pointpattern/
 │   ├── 09a_unified_window_api.ipynb               # unified get_window / bivariate_k / run_pair_analysis
 │   ├── 09b_custom_window_drawing.ipynb            # interactive polygon drawing tool
 │   ├── 09c_window_comparison.ipynb                # rect vs hull vs custom, visual + L(r) comparison
-│   ├── 10_lr_panel_and_network.ipynb              # [planned] L-R screening + network analysis
-│   └── 11_network_modularity.ipynb                # [planned] community detection, infection signalling
+│   ├── 10_poc_end_to_end.ipynb                    # L-R panel screening via HPC; lr_panel_results.parquet produced
+│   └── 11_results_overview.ipynb                  # network construction, community detection, figures
 │
 ├── src/
 │   └── spatialco/                  # Python package (extraction planned after nb12)
@@ -149,11 +149,11 @@ cosmx_pointpattern/
 
 **`09c_window_comparison`** ✅ Three-way visual and L(r) comparison: rectangular bounding box vs convex hull vs user-drawn custom polygon. Overlay figures, area table, and L(r) comparison plots for the positive and negative controls.
 
-### Phase 4 — Screening & Network (10–11) *[Planned]*
+### Phase 4 — Screening & Network (10–11)
 
-**`10_lr_panel_and_network`** Loops over 146 viable L-R pairs using the unified `run_pair_analysis` with `window_type='hull'`, saves per-pair co-localisation scores and envelope significance. Builds co-localisation graph and runs community detection.
+**`10_poc_end_to_end`** ✅ End-to-end proof-of-concept L-R screening via HPC SLURM array. Ran a biologically motivated subset of pairs (from the 146 CellChatDB intersections) across 3 strips with 199-permutation envelopes. Per-pair results aggregated to `results/lr_panel_results.parquet`.
 
-**`11_network_modularity`** Detailed network analysis: Louvain/Leiden community structure, comparison of infected vs control strip communities, identification of infection-specific signalling programmes.
+**`11_results_overview`** 🔄 Network construction and analysis: builds NetworkX co-localisation graph per strip, runs modularity-based community detection, generates heatmap, network plots, PCA and UMAP of L(r) profiles. Identifies infection-specific signalling communities (strip 2 vs strips 1/3).
 
 ## Control Framework
 
@@ -172,10 +172,12 @@ The permutation null shuffles gene labels while preserving spatial locations. It
 | Mar 31 | End-to-end pipeline on S1 | ✅ Done |
 | Apr 13 | DBSCAN QC + convex hull windows + controls re-run | ✅ Done |
 | Apr 14 | FOV expansion (02c) + unified window API (09a) + custom drawing tool (09b) + window comparison (09c) | ✅ Done |
-| Apr 30 | L-R panel screening + network analysis (nb10–11) | In progress |
+| Apr 30 | HPC L-R screening batch + results aggregation (nb10) | ✅ Done |
+| May 7 | Network construction, community detection, figures (nb11) | 🔄 In progress |
 | May 15 | FEATURE FREEZE — background + methods written | |
 | May 31 | Packaging, documentation, results finalised | |
 | Jun 3 | CODE FROZEN | |
+| Jul 1 | Complete polished draft (target — 2-week buffer) | |
 | Jul 16 | SUBMISSION | |
 
 ## Requirements
