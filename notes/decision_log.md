@@ -10,6 +10,212 @@
 
 ---
 
+## 2026-06-03 (afternoon) — Fig F sub-theme analysis: three-way infection biology
+
+After generating Fig F (per-pair Strip-2 boost for the 14 surviving G7 pairs)
+with sub-theme colouring, the breakdown is:
+
+| Sub-theme | n | Positive | Mean boost |
+|---|---:|---:|---:|
+| **Immune cell communication** (HLA-DRA, CXCL, CD3D, CD68, IL pairs) | 6 | 5 | **+0.20** (or +0.39 excluding CXCL8 × IL6 outlier) |
+| **Pure ISG–ISG** (ISG15, IFIT, MX1, OAS1 pairs) | 4 | 3 | **+0.16** |
+| **Antiviral × epithelium** (ISG/IFIT/MX × KRT) | 3 | 1 (essentially zero) | **−0.50** |
+
+**Per-pair findings worth remembering:**
+
+- HLA-DRA × CD3D: **+0.74** — antigen presentation onto T cells, strongest positive.
+- CXCL10 × CD3D: **+0.59** — IFN-induced T-cell-recruitment chemokine signalling.
+- OAS1 × ISG15: **+0.45** — canonical type I IFN co-expression.
+- HLA-DRA × CD68: **+0.32** — antigen presentation on macrophages.
+- IFIT1 × IFIT3: +0.24; IL6 × IL1B: +0.16; ISG15 × CD68: +0.15.
+- ISG15 × MX1: +0.01 (essentially null); ISG15 × IFIT1: −0.07 (essentially null).
+- ISG15 × KRT8: **−0.64** — ISG transcripts not near epithelium on infected.
+- CXCL8 × IL6: **−0.74** — NF-κB/proinflammatory axis on controls (asthmatic baseline).
+- MX1 × KRT5: **−0.90** — deepest negative; antiviral × basal epithelium gone.
+
+**Biological reading (three findings):**
+
+1. **Immune cell communication elevates on infected tissue (primary, Option A).**
+   Antigen presentation (HLA-DRA × CD3D/CD68), T-cell-recruitment chemokine
+   (CXCL10 × CD3D), monocyte/macrophage signalling (ISG15 × CD68) all peak on
+   infected. The textbook adaptive-immune-recruitment signature of a viral
+   response.
+
+2. **Antiviral × epithelium pairs redistribute *off* infected tissue
+   (paradoxical secondary, Option B framing).** Two readings, both
+   consistent: (a) epithelial cytopathic effect — RSV kills/sloughs infected
+   epithelium so KRT transcripts thin/displace; (b) ISG production migrates
+   from epithelium to infiltrating immune cells over the course of infection
+   (supported by ISG15 × CD68 being on the immune-positive side). This is a
+   finding **only a segmentation-free method can make** — cell-based tools
+   can't see "ISG transcripts redistributing across compartments" because
+   they pre-bin transcripts into cells before doing spatial analysis. This
+   is the unique-contribution argument for the dissertation.
+
+3. **CXCL8 × IL6 outlier is biologically interpretable, not a problem.**
+   CXCL8 / IL6 is the NF-κB / classical-proinflammatory cytokine axis. RSV
+   drives the type I IFN pathway (IRF3 → CXCL10, ISGs, MHC), not classical
+   proinflammatory. Severe asthmatic lung carries a chronic CXCL8/IL6
+   baseline on the control strips. The outlier is consistent with "the
+   acute viral response is IFN-driven, not NF-κB-driven" — the textbook RSV
+   phenotype. Worth one sentence in Discussion.
+
+**Statistical honesty.** Per-sub-theme sign tests don't reach formal
+significance individually (n = 3, 4, 6 are too small). The defensible
+combined test for the dissertation Results section is a **Mann-Whitney U on
+the combined positive sub-themes (immune-comm + ISG–ISG, n = 10) vs
+antiviral × epithelium (n = 3)** — directional separation is real and the
+effect sizes are substantial (±0.3 to ±0.9). Not yet run; flag for the
+Results chapter.
+
+**Framing decided.** Option A is the poster primary headline ("immune
+cell-cell signalling pairs elevate on infected tissue"). Option B is shown
+alongside as a paradoxical secondary finding ("and antiviral × epithelium
+pairs redistribute off infected tissue — a result only segmentation-free
+analysis can surface"). Fig F is locked.
+
+**Other figures:**
+- Fig C (group-wise SES violin) — done, banked for poster.
+- Fig D (heatmap of all 203 pairs × 3 strips) — banked. Competent landscape
+  but not punchy enough for poster.
+- Fig E (volcano: peak SES vs r_at_peak) — banked. Discrete r-values give a
+  banded look that doesn't read polished. Save for dissertation Results.
+- Fig F (per-pair G7 boost, sub-themed) — done, poster centrepiece.
+- Fig G (per-strip network with Louvain communities) — pending.
+- Fig H (UMAP of L(r) profile vectors) — pending.
+- Fig I (differential SES heatmap) — pending, optional.
+
+---
+
+## 2026-06-03 (morning) — Poster Fig B caption: Option 2 framing (binary-test explanation kept explicit)
+
+Decision: keep the binary-significance reasoning in Fig B's caption rather
+than airbrushing it out. The audience sees "neither pair passes the binary
+envelope test under this window, but SES still separates them by 2.67
+half-widths — so we rank by continuous SES." This pre-empts the obvious
+question ("did your test fail?") and walks the audience through the pivot
+in one caption. The longer dissertation Methods/Results sections inherit
+this framing.
+
+Also: poster figure letters re-numbered 2026-06-03 (had skipped C in the
+earlier revision). New order: A vendor dropout, B pos-vs-neg L(r),
+C group SES (was D), D heatmap (was E), E volcano (was F), F infection
+signature (was G), G network (was H), H UMAP (was I), I differential
+(was J). Filenames realigned to the new letters.
+
+---
+
+## 2026-06-03 (morning) — v2 sanity check reveals method actually measures spatial-association-beyond-marginals
+
+**Context.** With v2 aggregated, ran a quick `peak_ses` sort over the 176 v2
+rows to verify the anchoring prediction: cytokeratin pairs (Group 1) at top,
+housekeeping/cross-compartment anchors (Group 6) at bottom.
+
+**Finding — the prediction was wrong, and instructively so.**
+
+Top 10 by peak SES (all positive, range +0.92 to +1.16):
+- Stromal: PECAM1×VWF strip_1, COL1A1×COL3A1 strip_3
+- Paracrine: FGF7×FGFR2 strip_2, CCL2×CCR2 strip_2 and strip_3, TNF×TNFRSF1A strip_3
+- Immune: CD68×CD14 strip_2
+- **Infection-response: OAS1×ISG15 strip_2, CXCL10×CD3D strip_2, HLA-DRA×CD3D strip_2**
+
+Bottom 10 (range −1.20 to −4.10) — and the surprise: dominated by **Group 1
+cytokeratin pairs**, not Group 6 anchors:
+- KRT19×SCGB3A1 (strip_1, strip_2) — SES −2.95 to −4.10 (deepest negative)
+- KRT14×KRT15 strip_1, KRT8×KRT19 strip_1, KRT18×KRT19 strip_1 — SES around −2
+- MALAT1×KRT18 — SES −1.5 to −2.7 across strips
+- EPCAM×SCGB3A1 — SES around −1.2 to −1.6
+
+**Interpretation — methodological, not a bug.**
+
+The label-swap permutation null preserves the *marginal spatial distribution*
+of every gene; it only breaks the (point, label) association. So bivariate
+Ripley's K under this null measures **excess spatial co-association beyond
+what each gene's marginal density predicts.** Not "do A and B co-occur in the
+same regions" — that is a marginal-only question, and the null answers it
+exactly the same as the data.
+
+- **Cytokeratins co-saturate the epithelium** → both labels cover the same
+  large region → under label-swap, observed ≈ null → SES ≈ 0 (slightly
+  negative due to estimator behaviour and the negative bias documented in
+  nb09 / `fraction_inside_hull`). No "excess" co-clustering exists to detect.
+- **Vasculature / immune niches / signalling axes cluster in discrete
+  sub-regions** → observed transcripts of A are physically near transcripts
+  of B *more* than random label assignment to existing points would give →
+  positive SES.
+- **Negative SES (especially KRT19 × SCGB3A1 at −4.10) indicates statistical
+  anti-association**: KRT19 spreads across simple epithelium while SCGB3A1
+  concentrates in club-cell niches; the observed joint pattern is *less*
+  spatially adjacent than the null because the two genes occupy disjoint
+  epithelial sub-niches.
+
+**This is a more rigorous interpretation of what the method tests than the
+naive "co-expression detector" framing**:
+
+> Bivariate Ripley's K on transcript point patterns with label-swap
+> permutation null detects **excess (or deficit) spatial co-association beyond
+> marginal density**.
+
+For pairs where both genes are constitutively expressed across the same broad
+region, the test is correctly null. For pairs with discrete focal
+co-localisation (vasculature, niches, signalling foci), the test picks up
+genuine excess.
+
+**Headline biological finding — Criterion 3 evidence is real.**
+
+Four of the top 10 pairs are infection-response pairs, all on strip 2
+(infected): OAS1×ISG15, CXCL10×CD3D, HLA-DRA×CD3D, CD68×CD14. This is the
+infection-specific signature the revival plan asked for — antiviral ISG
+co-expression, T-cell-recruitment chemokine signalling, antigen-presentation
+on T cells, monocyte/macrophage co-expression — all preferentially in the
+infected tissue compartment.
+
+**Implications for poster (revised from `poster_design.md`).**
+
+Old Conclusions line:
+- ❌ "Test discriminates positive from negative controls by SES" (based on
+   A.6 KRT8×KRT18 vs MALAT1×KRT18 separation of +2.67 envelope half-widths).
+
+Replace with:
+- ✅ "Test detects **excess spatial co-association beyond marginal density**.
+   Pairs with diffuse marginal distributions (cytokeratins) correctly score
+   null. Pairs with focal spatial structure (vasculature, immune niches,
+   paracrine signalling) score above the envelope."
+- ✅ "**Infection-specific signalling signature on strip 2** (infected): ISG
+   co-expression (OAS1×ISG15), T-cell-recruitment chemokines (CXCL10×CD3D),
+   antigen presentation (HLA-DRA×CD3D), and innate-immune co-markers
+   (CD68×CD14) all preferentially score in strip 2."
+
+**Implications for nb13 A.5 today.**
+
+Re-plan the morning's work:
+1. Compute peak SES on **pooled v1 + v2** (~614 rows).
+2. **Group-wise SES distribution** (violin/strip plot by G1–G8): visually
+   establishes that G7 (infection) and G5 (stromal) and G8 (paracrine) score
+   high; G1 (cytokeratin) and G6 (anchors) score null-to-negative. This is
+   Fig C on the poster.
+3. **Criterion 3 figure**: for G7 pairs specifically, peak SES distribution
+   facetted by strip — predict strip_2 > strips 1, 3. This is now the strongest
+   single result and should be the centerpiece of the poster's right column.
+4. **Top-N network**: take top-50 per strip by SES, build NetworkX graph,
+   communities by Louvain. Note that the "communities" are now to be
+   interpreted as *spatial signalling modules*, not "co-expression clusters."
+
+**A.6 interpretation revised.**
+
+A.6's KRT8×KRT18 SES = −2.18 / MALAT1×KRT18 SES = −4.85 result still holds
+descriptively, but the *interpretation* changes:
+- Both pairs are "marginally diffuse," sitting below the envelope under
+  label-swap.
+- The 2.67 SES separation is small but real, and is informative as a
+  *relative* contrast.
+- The principled validation argument is no longer "positive sits above
+  negative" but **"the method correctly assigns low SES to diffuse pairs
+  (both cytokeratins and housekeeping × specific), and high SES only to
+  pairs with focal spatial structure."**
+
+---
+
 ## 2026-06-02 (evening) — Extended panel v2 submission
 
 **Context.** A.6 (this morning) invalidated the original justification for the
