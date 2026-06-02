@@ -2,7 +2,7 @@
 
 > Single living status board. Update at the end of each work session. Anything older than ~3 days here is stale.
 
-**Last update:** 2026-06-03 (afternoon — Fig F finalised, handoff to new chat)
+**Last update:** 2026-06-03 (evening — Figs G + H generated; all poster figures now banked or done)
 
 **Supervisor:** Dr Dan Nicolau (Nicolau Lab, KCL).
 
@@ -12,7 +12,7 @@
 
 | # | Deliverable | Deadline | State |
 |---|---|---|---|
-| 1 | NeuroMonster A0 poster — **PRINT** | **Sat 6 June 2026** (fly Rome Sun 7) | Fig F (infection biology) locked; Fig C (group SES) done; Figs D, E banked; Figs G (network), H (UMAP) pending; pptx layout pass not started |
+| 1 | NeuroMonster A0 poster — **PRINT** | **Sat 6 June 2026** (fly Rome Sun 7) | All figures ready: Fig F (infection biology) locked; Figs C (group SES), G (network), H (UMAP) done; Figs D, E banked. pptx layout pass not started |
 | 2 | MSc dissertation draft → Dan Nicolau | End of June 2026 | 0 / 12,000 words |
 | 3 | MSc dissertation submission | 16 July 2026 | — |
 | 4 | Full-length presentation | Built in Week 5 (post-supervisor feedback) | — |
@@ -43,9 +43,11 @@
 
 ## What's next (3 bullets)
 
-1. **nb13 Fig G (network):** per-strip NetworkX graph from pooled v1+v2 with top-50 edges per strip by SES, Louvain communities, save to `results/figures/13_G_network.png`. Likely poster panel.
-2. **nb13 Fig H (UMAP of L(r) profiles):** project each (pair, strip) row's 50-dim L(r) vector to 2-D, colour by group. `results/figures/13_H_umap.png`. Likely poster panel.
-3. **Thu–Sat:** poster layout in `docs/NoSeggs_Poster.pptx` per `notes/poster_design.md`, then A4 test print, A0 order, collect Saturday before Sunday flight.
+1. **Thu 4 June — poster layout** in `docs/NoSeggs_Poster.pptx` per `notes/poster_design.md`: 7 panels (A vendor dropout, B pos-vs-neg, C group SES, F infection, G network, H UMAP + intro/methods/conclusions). All figure PNGs exist at 300 dpi.
+2. **Fri 5 June — A4 test print** (legibility check at 8× shrink), then A0 order at KCL Print Services / local shop (confirm 24h turnaround).
+3. **Sat 6 June — collect A0**, tube/case for travel; fly Rome Sun 7.
+
+*(Done 2026-06-03 evening: Fig G per-strip Louvain network + Fig H L(r)-profile UMAP, both in nb13 §8/§9 → `results/figures/13_G_network.png`, `13_H_umap.png`.)*
 
 ## C decision (network revival) — DECIDED 2026-06-02
 

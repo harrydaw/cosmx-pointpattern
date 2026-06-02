@@ -269,11 +269,17 @@
   antiviral × epithelium (n = 3)** — directional separation expected to
   be significant given the effect sizes. (TODO before submission.)
 
-### 5. Network and community structure (~500 words) — depends on Fig G
-- Per-strip network from top-50 SES edges; Louvain communities.
-- Expected: infection-response community on strip 2, stromal/vascular
-  community broadly distributed, anti-association as repulsive edges.
-- Louvain seed stability (multiple seeds) → supplementary.
+### 5. Network and community structure (~500 words) — Fig G done 2026-06-03
+- Per-strip network from top-50 peak-SES edges; Louvain communities, only
+  modules of ≥3 genes coloured (the rest are disjoint gene-pairs — a real
+  sparsity property at top-50, stated honestly).
+- **Result:** strip 2 (infected) carries more and larger connected modules
+  (10 modules / 43 genes) than the controls (strip 1: 6 / 36; strip 3:
+  8 / 38). A second, independent line of criterion-3 evidence beyond Fig F:
+  infection elevates *connected* co-association structure, not just per-pair
+  SES.
+- Louvain + spring-layout both seed=42; seed stability across ≥5 seeds →
+  supplementary (TODO).
 
 ### 6. L(r) profile structure recovers biological grouping (~300 words) — depends on Fig H
 - UMAP of 50-dim L(r) profile vectors per (pair, strip).

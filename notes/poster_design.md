@@ -170,21 +170,35 @@ space allows:* HLA-DRA × CD3D +0.74, CXCL10 × CD3D +0.59, OAS1 × ISG15
 +0.45, HLA-DRA × CD68 +0.32; ISG15 × KRT8 −0.64, CXCL8 × IL6 −0.74,
 MX1 × KRT5 −0.90.
 
-**Fig G — Per-strip network with Louvain communities (top-50 SES per strip).**
-File: `results/figures/13_G_network.png` (was Fig H).
+**Fig G — Per-strip network with Louvain communities (top-50 SES per strip) — done 2026-06-03 evening.**
+File: `results/figures/13_G_network.png` (was Fig H). Generated in nb13 §8.
 Spec: NetworkX spring layout per strip, nodes = genes, edges = top-50 pair
 edges per strip, edge width ∝ peak SES, node colour = Louvain community,
 node size ∝ degree.
+*Design note (decided 2026-06-03 evening):* at top-50 edges the graph is
+sparse (~50 edges over ~74 genes) so most Louvain "communities" are trivial
+disjoint pairs. We colour only genuine modules (communities of ≥3 genes) and
+grey the isolated pairs, so the real connected modules read on A0. Strip 2
+(infected) carries more and larger modules (10 modules / 43 genes) than the
+controls (6 / 36 and 8 / 38) — directly supports the criterion-3 story.
+Edge ranking uses peak SES = max_r SES(r), the Fig C–F metric (NOT the §7
+signed-peak-at-max-|SES| used only for the Fig B control discrimination).
 *Caption.* "Top-50 spatial co-association edges per strip, with
 modularity-based community detection (Louvain). Communities are spatial
 signalling modules — interferon response, chemokine signalling, stromal
 ECM, vascular markers — recovered without any cell segmentation or
 cell-type calling."
 
-**Fig H — UMAP of L(r) profile vectors, coloured by group.**
-File: `results/figures/13_H_umap.png` (was Fig I).
+**Fig H — UMAP of L(r) profile vectors, coloured by group — done 2026-06-03 evening.**
+File: `results/figures/13_H_umap.png` (was Fig I). Generated in nb13 §9.
 Spec: each (pair, strip) row treated as a 50-dim vector of L(r) values,
-UMAP-projected to 2-D, points coloured by group.
+per-column standardised (so curve *shape*, not absolute L magnitude, drives
+the embedding), UMAP (n_neighbors=15, min_dist=0.1, euclidean, seed=42) to
+2-D, points coloured by group with the IBM palette shared with Figs C–F.
+*Observed:* soft but real structure — immune (G4), infection (G7) and stromal
+(G5) groups enrich one arm of the embedding; G0 CellChatDB (grey) spans the
+whole space. Honest framing for the caption: "recovers biological grouping as
+*soft* visual structure", not hard clusters.
 *Caption.* "Pairs with similar L(r) curve shapes cluster in UMAP space.
 Group identity is recovered as visual structure: stromal, immune, and
 infection-response pairs occupy distinct regions, demonstrating that the

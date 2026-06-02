@@ -10,6 +10,47 @@
 
 ---
 
+## 2026-06-03 (evening) — Figs G (network) + H (UMAP) generated; two SES summaries clarified
+
+Generated the last two poster figures in nb13 (§8 Fig G, §9 Fig H), both from
+the pooled v1+v2 614-row frame built in the §A.5 cell.
+
+**Two distinct SES summaries coexist — do not conflate.** While building Fig G
+I confirmed the project uses *two* different per-row SES scalars:
+
+1. **`peak_ses = max_r SES(r)`** (the strongest positive excursion). This is the
+   ranking metric for Figs C/D/F and now G. Group means reconcile exactly:
+   G8 +0.40, G7 +0.35, G5 +0.31, G4 +0.30, G0 +0.27, G6 −0.16, G1 −0.19,
+   G3 −1.98.
+2. **`signed-peak-at-max-|SES|`** (nb13 §7 `peak_signed_ses`) — the most extreme
+   deviation regardless of sign. Used *only* for the Fig B control framing
+   (KRT8×KRT18 −2.18, MALAT1×KRT18 −4.85). Under (1) these same controls are
+   near-zero/positive, so the two must never be quoted interchangeably.
+
+**Fig G design decision.** Top-50 (pair, strip) edges by `peak_ses` (positive
+only); nodes = genes; Louvain communities. At this sparsity (~50 edges over
+~74 genes) the graph is mostly *disjoint gene-pairs*, so naive Louvain returns
+~25 trivial communities — visually useless and methodologically hollow. Fix:
+colour only genuine modules (Louvain communities of **≥3 genes**) and grey the
+isolated pairs. This makes the real connected signalling modules legible and is
+honest about the sparsity. **Criterion-3 bonus:** strip 2 (infected) carries
+more and larger modules (10 modules / 43 genes) than strips 1 and 3 (6 / 36 and
+8 / 38) — a second, independent line of evidence for infection-elevated
+co-association beyond Fig F. Worth a sentence in Results §5.
+
+**Fig H design decision.** Each (pair, strip) row's 50-D L(r) curve →
+per-column StandardScaler (so curve *shape*, not absolute L magnitude, drives
+the embedding) → UMAP (n_neighbors=15, min_dist=0.1, euclidean, seed=42).
+Result: **soft, not hard** structure — G4/G5/G7 enrich one arm; G0 spans the
+space. Caption must say "recovers biological grouping as soft visual
+structure", not "distinct clusters" — the honest reading.
+
+**Sensitivity TODOs (dissertation, not poster):** Louvain + spring layout both
+seed=42; repeat Fig G across ≥5 seeds (already on the outline TODO). UMAP is
+also seed-sensitive; note as a caveat.
+
+---
+
 ## 2026-06-03 (afternoon) — Fig F sub-theme analysis: three-way infection biology
 
 After generating Fig F (per-pair Strip-2 boost for the 14 surviving G7 pairs)
