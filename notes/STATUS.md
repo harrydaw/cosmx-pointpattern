@@ -2,7 +2,7 @@
 
 > Single living status board. Update at the end of each work session. Anything older than ~3 days here is stale.
 
-**Last update:** 2026-06-03 (evening — Figs G + H generated; all poster figures now banked or done)
+**Last update:** 2026-06-04 (late) — Poster now "complete": added two new nb14 figures and folded them into the A0 layout. **`14_M0_raw_data.png`** (one FOV, 3 panels: DAPI → vendor seg mask → raw transcripts assigned-vs-unassigned, ~40% magenta) leads "The Problem"; **`14_M6_workflow.png`** (8-stage flowchart with amber option-chips + quick-start panel) is the Methods visual anchor. Both 300 dpi, Arial, executed in nb14 (exec 1–9). **nb13 re-executed → B/C/F/G/H regenerated in Arial** (Fig B dpi 300), so the whole poster is now font-consistent. Poster `docs/NoSeggs_Poster_A0.pptx` rebuilt with all Arial figs + M0 + M6, COM-rendered, fits clean across all 3 columns — no overflow. **Infra:** notebook execution was failing on a stale global kernelspec — fixed by installing a venv-prefix `noseggs` kernel (ran via `python -m nbconvert --execute --ExecutePreprocessor.kernel_name=noseggs`; the `jupyter` dispatcher swallows output, use `-m nbconvert`). **Remaining for Harry:** fill the `[ FILL ]` prose prompts + fact-checks, touch up spacing in PowerPoint, then A4 test print → A0 order. Prior (evening): A0 poster first assembled (true A0 84.1×118.9 cm; A1 `NoSeggs_Poster.pptx` kept as fallback; native editable text/table/pictures, `[ FILL ]` prompts + legends).
 
 **Supervisor:** Dr Dan Nicolau (Nicolau Lab, KCL).
 
@@ -12,7 +12,7 @@
 
 | # | Deliverable | Deadline | State |
 |---|---|---|---|
-| 1 | NeuroMonster A0 poster — **PRINT** | **Sat 6 June 2026** (fly Rome Sun 7) | All figures ready: Fig F (infection biology) locked; Figs C (group SES), G (network), H (UMAP) done; Figs D, E banked. pptx layout pass not started |
+| 1 | NeuroMonster A0 poster — **PRINT** | **Sat 6 June 2026** (fly Rome Sun 7) | All figures ready. Results: Fig F (infection) locked; C/G/H done; D/E banked. **Methodology suite (nb14):** M1 dropout, M2 GMM strips, M3 DBSCAN QC, M4 window iterations, M5 r-scale + T 2D positioning map — all 300 dpi, poster-grade. pptx layout pass not started — use REVISED methodology-forward layout in poster_design.md |
 | 2 | MSc dissertation draft → Dan Nicolau | End of June 2026 | 0 / 12,000 words |
 | 3 | MSc dissertation submission | 16 July 2026 | — |
 | 4 | Full-length presentation | Built in Week 5 (post-supervisor feedback) | — |
@@ -43,7 +43,7 @@
 
 ## What's next (3 bullets)
 
-1. **Thu 4 June — poster layout** in `docs/NoSeggs_Poster.pptx` per `notes/poster_design.md`: 7 panels (A vendor dropout, B pos-vs-neg, C group SES, F infection, G network, H UMAP + intro/methods/conclusions). All figure PNGs exist at 300 dpi.
+1. **Thu 4 June — poster layout: DONE (draft).** `docs/NoSeggs_Poster_A0.pptx` built at A0 with the methodology-forward layout (Left = Intro + M1 → M2 → M3; Middle = pipeline + M4 + M5 + T + Fig B + validation table + Fig C; Right = Fig F + Fig G + Fig H; bottom band = conclusions/refs/acks/QR). Next on this: **Harry to fill the `[ FILL ]` prompts** (intro fact-check, results headline, Negative-2 SES, references, funder attribution) and touch up spacing in PowerPoint. Optional: re-run nb13 results figs with Arial pinned for full font consistency.
 2. **Fri 5 June — A4 test print** (legibility check at 8× shrink), then A0 order at KCL Print Services / local shop (confirm 24h turnaround).
 3. **Sat 6 June — collect A0**, tube/case for travel; fly Rome Sun 7.
 

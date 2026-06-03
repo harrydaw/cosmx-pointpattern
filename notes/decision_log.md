@@ -10,6 +10,163 @@
 
 ---
 
+## 2026-06-04 (late) — M0 raw-data + M6 workflow added; Arial re-run; kernelspec fix
+
+**Decision (Harry).** Make the poster "as complete as possible": (1) confirm
+Arial everywhere — re-run nb13 results figs (B/C/F/G/H) in Arial for full
+consistency, not just the nb14 suite; (2) add an **overall-operations flowchart
+with a quick-start guide** showing what the tool is for and the tunable options
+along the way; (3) add a **raw-data view** showing what CosMx actually produces,
+highlighting the layers that fail vs the layer NoSeggs carries through.
+
+**Implemented (two new nb14 figures, 300 dpi, Arial).**
+- **`14_M0_raw_data.png`** — one FOV (FOV 4), three panels read live from
+  `data/raw/Varsha_1234.zarr`: raw DAPI morphology → vendor segmentation mask
+  (148 cells, the discarded layer) → raw transcripts coloured assigned (blue) vs
+  unassigned `cell_ID==0` (magenta, ~40% of points). The grounding "what the data
+  looks like" figure. Cell `m0-raw-code` in nb14.
+- **`14_M6_workflow.png`** — portrait flowchart: 8 stages (INPUT → GMM strips →
+  DBSCAN → window → bivariate Ripley K/L → permutation envelope → SES ranking →
+  OUTPUTS) with amber option-chips for every tunable choice, plus a purple
+  quick-start panel ("use NoSeggs when…"). Cell `m6-flow-code` in nb14.
+
+**Poster (`docs/_build_poster.py`).** M0 now leads "The Problem — Segmentation
+Fails" (above M1); M6 replaces the verbose text-pipeline paragraph as the visual
+anchor of the Methods column (the "Significance → effect size" pull-out is kept).
+Re-rendered via PowerPoint COM — both fit cleanly, no overflow.
+
+**Kernel fix (infra).** The global `python3` kernelspec had a stale argv path
+(repo moved to `Desktop\NoSegs_Project`), so notebook execution failed with
+`FileNotFoundError [WinError 2]`. Did **not** touch the out-of-repo global spec;
+instead installed a clean venv-prefix kernelspec (`noseggs` →
+`.venv/share/jupyter/kernels/noseggs/kernel.json`, argv = venv python). Notebooks
+now execute via `python -m nbconvert --execute --ExecutePreprocessor.kernel_name=noseggs`.
+(Note: the `jupyter` dispatcher swallows output silently in this venv — call
+`-m nbconvert` directly.) Also fixed a JSON-patch bug that had turned `\n` inside
+title strings into literal newlines (SyntaxError) and mangled em-dashes; M0/M6
+cell sources rewritten with proper escapes and re-executed (exec counts 1–9).
+
+## 2026-06-04 (evening) — A0 poster assembled (methodology-forward layout)
+
+**Decision (Harry).** Pin **Arial** across all figures for a consistent look;
+build the actual A0 poster from the nb14 suite. The existing working file
+`docs/NoSeggs_Poster.pptx` was found to be **A1** (59.4 × 84.1 cm), not A0, and
+carried the older text-pipeline + Fig A/B/C/D results layout.
+
+**Implemented.** New **`docs/NoSeggs_Poster_A0.pptx`** — true A0 portrait
+(84.1 × 118.9 cm), built fresh (original A1 left untouched as a fallback) via
+`docs/_build_poster.py` (python-pptx). Fully native/editable: text boxes, a real
+PowerPoint table, and figures inserted as picture objects (no flattened images).
+Methodology-forward 3-column layout per `poster_design.md`:
+- **Left** (the problem + wrangling): Introduction → M1 dropout → M2 GMM → M3 DBSCAN.
+- **Middle** (the method + that it works): pipeline + significance→effect-size
+  pull-out → M4 windows → M5 r-scale/edge → T capability table → Fig B controls →
+  validation table → Fig C group-SES.
+- **Right** (the biology): Fig F infection boost → Fig G networks → Fig H UMAP.
+- **Bottom band**: Conclusions/Next-steps · Key References · Acknowledgements · QR.
+KCL logo + QR extracted from the A1 file and reused. Every section carries the
+drafted real text plus purple-italic **`[ FILL ]` guide prompts** for the prose
+Harry still needs to write/fact-check, and every figure has an editable legend
+(captions lifted from `poster_design.md`). Verified by PowerPoint-COM PNG export.
+Font note: nb14 figures are Arial; the nb13 results figures (B/C/F/G/H) are still
+DejaVu Sans — flagged for a consistency re-run if time permits before print.
+
+## 2026-06-04 (PM) — Methodology figures rebuilt as a polished suite (nb14)
+
+**Decision (Harry feedback → implemented).** The first methodology pass lived in
+standalone `scripts/poster_fig_*.py` and used hand-built composite sub-panels.
+Four corrections: (1) figure code must live in **Jupyter notebooks** like the
+rest of the project; (2) the hand-built sub-panels were weaker than the *real*
+figures already produced in nb01–nb12 — reuse those, especially the polished
+**segmentation-dropout** figure that grounds the work and the nb10 POC flow;
+(3) tell a better story with **more, separate** figures foregrounding the
+refinement big hitters (GMM assignment, R-value/scale design, window iterations,
+DBSCAN QC); (4) the tool-comparison matrix works but needed **significant
+smartening** → redesign as a **2D positioning map**.
+
+**Implemented.** New **`notebooks/14_poster_methods.ipynb`** (keeps nb13 for
+results-diagnostics) banks a suite of separate, individually polished 300-dpi
+panels for flexible PowerPoint layout:
+- **M1** `14_M1_segmentation_dropout.png` — rebuilt grounding dropout figure
+  (43.6 % unassigned, per-FOV consistency).
+- **M2** `14_M2_gmm_strips.png` — GMM strip assignment: representative FOV
+  rotated-coords scatter (three crisp vertical strips + GMM midpoint boundaries)
+  beside per-FOV trimodal x_rot histograms.
+- **M3** `14_M3_dbscan_qc.png` — adaptive-DBSCAN noise QC (87 % retained;
+  ε = p97 1-NN clipped [20,30]).
+- **M4** `14_M4_window_iterations.png` — rect → convex → concave hull per strip
+  with areas in Mpx² (window = dominant lever for inferential power).
+- **M5** `14_M5_rscale.png` — two-segment r-grid schematic + concentric rings on
+  a real KRT8 transcript + Shapely edge-correction weight at the hull boundary.
+- **T** `14_T_tool_positioning.png` — 2D positioning map (x = segmentation
+  dependence, y = answers L–R co-localisation); NoSeggs alone in the top-left
+  vacant-niche quadrant. Positions conceptual, justified per
+  `memory/project_competitor_landscape.md`.
+
+All stats read live from `s1_all_strips_cleaned.parquet`; no DBSCAN/GMM re-run
+(figures draw from stored labels). Helpers reused from `00_functions.ipynb`.
+
+**Figure fixes during build.** M2 left and M4 originally used `set_aspect("equal")`,
+which collapsed the ~1:12 thin tissue strips into illegible vertical slivers with
+garbled overlapping x-ticks. Fix: M2 left now shows a single representative FOV
+(strips only separate *within* a FOV — across FOVs the rotated-x ranges overlap)
+with limited ticks; M4 uses `aspect="auto"` so the convex-vs-concave hull *shape*
+difference is visible, with the true scale carried by the Mpx² areas in the legend.
+
+**Superseded & deleted.** `scripts/poster_fig_methods.py`,
+`scripts/poster_fig_toolcompare.py`, and the old `results/figures/13_M_methods_pipeline.png`
++ `13_T_tool_comparison.png` (replaced by the nb14 suite above).
+
+**Note on kernel.** The project folder moved to `Desktop/NoSegs_Project/...`; the
+global `cosmx-pointpattern` Jupyter kernelspec still points at the old
+`Desktop/cosmx-pointpattern/.venv` path (stale, causes FileNotFound on headless
+execute). Worked around by executing nb14 via NotebookClient with a kernel rooted
+at the repo `.venv` python. The global kernel.json should be repointed when convenient.
+
+---
+
+## 2026-06-04 — Methodology emphasis: Fig M (QC composite) + Fig T (tool comparison)
+
+**Decision (Harry).** Dedicate a substantial chunk of the poster to methodology
+and tool comparison, rather than leaning on the (potentially bold) results
+claims alone. The vast majority of the notebook work (00–09) was data-wrangling
+that converts an *unanalysable* dataset into an analysable one — that *is* the
+contribution, and foregrounding it makes the poster more defensible. Storyline:
+data acquired → vendor segmentation failed (43.6 % of transcripts unassigned) →
+third-party segmentation fixes failed → no existing pipeline avoids binning
+~100 GB of expensive data → here are the tools built to analyse it segmentation-free.
+
+**Fig M — composite QC/data-wrangling pipeline** (`results/figures/13_M_methods_pipeline.png`,
+generator `scripts/poster_fig_methods.py`). 2×3 grid, raw → analysable:
+M1 segmentation dropout (43.6 % cell_ID=0, by CellComp); M2 PCA axis rotation
+(6.4° ACW); M3 GMM strip assignment (FOV 4); M4 adaptive DBSCAN ε from p97 1-NN
+clipped [20,30]; M5 DBSCAN noise removal (87 % retained = 7.6 % noise + 2.0 %
+small + 5.4 % manual); M6 concave-hull window (ratio 0.1) + Shapely edge
+correction. All stats read live from `s1_all_strips_cleaned.parquet` so the
+figure cannot drift from the data.
+
+**Fig T — tool-comparison matrix** (`results/figures/13_T_tool_comparison.png`,
+generator `scripts/poster_fig_toolcompare.py`). 7 tools × 4 capability columns,
+NoSeggs the only all-green row. Facts verified 2026-06-01 against primary
+sources (Bento = Mah 2024 needs segmentation; Squidpy = cell-level; CellChat/
+LIANA = annotated matrices; Baysor = soft segmentation; FICTURE = seg-free but
+domains not L–R; spatstat = generic). Encodes the defensible novelty claim
+visually without overclaiming.
+
+**Reproducibility note.** Both are standalone tested scripts (loading the
+canonical cleaned parquet), kept in `scripts/` rather than embedded as
+unexecuted nb13 cells — lower risk than re-running heavy nb13 surgery before a
+print deadline, and they regenerate the exact PNGs deterministically.
+
+**Layout consequence.** Poster pivots methodology-forward (see poster_design.md
+REVISED layout): Fig M anchors the left column; Fig T leads the middle column.
+Fig A (`01_vendor_segmentation_dropout.png`) now overlaps Fig M's M1 panel —
+drop Fig A from the poster (keep for dissertation) to avoid redundancy. Figs D
+(heatmap), E (volcano), I (diff SES) displaced to the dissertation Results
+chapter.
+
+---
+
 ## 2026-06-03 (evening) — Figs G (network) + H (UMAP) generated; two SES summaries clarified
 
 Generated the last two poster figures in nb13 (§8 Fig G, §9 Fig H), both from
