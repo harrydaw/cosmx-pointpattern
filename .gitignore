@@ -212,3 +212,6 @@ data/processed/*
 results/*
 *.csv
 *.parquet
+
+docs/_poster_assets/preview.png
+docs/_poster_assets/crop_*.png
