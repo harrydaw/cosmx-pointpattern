@@ -1,8 +1,8 @@
-# NoSeggs — Segmentation-Free Spatial Co-Expression Analysis
+# NoSegs — Segmentation-Free Spatial Co-Expression Analysis
 
 **MSc Bioinformatics Research Project** | King's College London | 2026
 
-A research codebase for **segmentation-free ligand–receptor co-localisation analysis** in spatial transcriptomics. NoSeggs treats each gene as a 2D point pattern and applies bivariate Ripley's K-function with permutation envelopes directly to raw transcript coordinates — bypassing the cell segmentation step entirely.
+A research codebase for **segmentation-free ligand–receptor co-localisation analysis** in spatial transcriptomics. NoSegs treats each gene as a 2D point pattern and applies bivariate Ripley's K-function with permutation envelopes directly to raw transcript coordinates — bypassing the cell segmentation step entirely.
 
 > This is a dissertation-track research codebase, not a maintained Python library. The notebooks reproduce the analysis end-to-end.
 
@@ -12,7 +12,7 @@ A research codebase for **segmentation-free ligand–receptor co-localisation an
 
 Cell segmentation is a fragile prerequisite for almost every downstream analysis in imaging-based spatial transcriptomics. On the CosMx sample analysed here, the vendor segmentation drops ~42% of transcripts and misses most subcellular compartment labels, rendering segmentation-dependent tools (CellChat, LIANA, Bento, Squidpy) unusable for ligand–receptor inference.
 
-NoSeggs sidesteps the problem: each gene becomes a planar point pattern, and bivariate Ripley's K with label-permutation envelopes asks whether two genes' transcripts spatially co-localise more than expected under a tissue-structure-preserving null. The pipeline scales to panel-level screening (146 ligand–receptor pairs × 3 tissue compartments via a 438-job HPC array).
+NoSegs sidesteps the problem: each gene becomes a planar point pattern, and bivariate Ripley's K with label-permutation envelopes asks whether two genes' transcripts spatially co-localise more than expected under a tissue-structure-preserving null. The pipeline scales to panel-level screening (146 ligand–receptor pairs × 3 tissue compartments via a 438-job HPC array).
 
 ## Where this sits in the existing toolset
 
@@ -24,13 +24,13 @@ NoSeggs sidesteps the problem: each gene becomes a planar point pattern, and biv
 | Baysor | transcripts | soft cell assignments | Soft segmentation |
 | FICTURE (Si et al. 2023) | transcripts | pseudo-tissue factors | No, but doesn't do L–R |
 | spatstat (R) | generic 2D point pattern | K, L, etc. | N/A — generic stats |
-| **NoSeggs** | **raw transcripts only** | **L–R co-localisation + communities** | **No.** |
+| **NoSegs** | **raw transcripts only** | **L–R co-localisation + communities** | **No.** |
 
 ## Approach
 
 1. **Load and QC** raw CosMx transcript tables (millions of reads with global x/y, gene labels, FOV assignments).
-2. **Assign tissue strips** within each FOV via Gaussian Mixture Models on x-coordinate distributions (control / infected / control layout).
-3. **Clean rogue transcripts** outside tissue boundaries via density-based filtering (DBSCAN), so observation windows reflect actual tissue geometry.
+2. **Assign tissue strips** within each FOV via Gaussian Mixture Models on the PCA-rotated x-coordinate (control / infected / control layout).
+3. **Clean rogue transcripts** outside tissue boundaries via density-based filtering (DBSCAN) plus a manual cluster-exclusion list, so observation windows reflect actual tissue geometry.
 4. **Fit observation windows** to cleaned strips — rectangular, concave hull, or custom polygon — for edge correction in the K-function.
 5. **Compute bivariate Ripley's K and L functions** per gene pair, with polygon-aware Shapely-based edge correction.
 6. **Build permutation envelopes** to distinguish gene-specific co-localisation from tissue-structure confounding.
@@ -66,12 +66,12 @@ cosmx-pointpattern/
 │   ├── 05_negative_control_validation.ipynb       # MALAT1×KRT18, KRT8×SCGB3A1
 │   ├── 06_LR_checks.ipynb                         # 146 viable CellChatDB pairs
 │   ├── 07_expanded_controls.ipynb                 # Controls on full 6-FOV dataset
-│   ├── 08_improved_QC.ipynb                       # DBSCAN noise removal
-│   ├── 08b_manual_qc_cleanup.ipynb                # Hand-curated cluster exclusions
+│   ├── 08_improved_QC.ipynb                       # DBSCAN noise-removal method development
+│   ├── 08b_manual_qc_cleanup.ipynb                # QC dev (superseded by nb10 for the final cleaning)
 │   ├── 09_improved_windows_and_edge_correction.ipynb   # Concave hull + Shapely
 │   ├── 09a_unified_window_api.ipynb               # get_window dispatcher
 │   ├── 09c_window_comparison.ipynb                # rect vs hull vs custom
-│   ├── 10_poc_end_to_end.ipynb                    # POC; HPC parameter freeze
+│   ├── 10_poc_end_to_end.ipynb                    # POC + CANONICAL cleaner (writes s1_all_strips_cleaned.parquet; 18-cluster manual exclusion)
 │   ├── 11_results_overview.ipynb                  # Aggregated panel results
 │   ├── 12_network_analysis.ipynb                  # Network + community detection
 │   ├── 13_diagnostics.ipynb                       # Sparse-signal diagnostics (WIP)
@@ -96,7 +96,7 @@ cosmx-pointpattern/
 │   └── STATUS.md                                  # Current status board
 ├── planning_docs/                                 # Living planning + decisions log
 ├── docs/
-│   ├── NoSeggs_Poster.pptx                        # NeuroMonster A0 poster (active)
+│   ├── NoSegs_Poster.pptx                        # NeuroMonster A0 poster (active)
 │   └── archive/                                   # Old talks
 ├── README.md
 ├── requirements.txt
@@ -105,13 +105,15 @@ cosmx-pointpattern/
 
 ## Control framework
 
-| Control | Gene Pair | Expected Result | Confirmed |
+| Control | Gene Pair | Expectation | Confirmed |
 |---|---|---|---|
-| Positive | KRT8 × KRT18 | L(r) above envelope (co-expressed epithelial keratins) | ✅ All 3 strips |
-| Negative 1 | MALAT1 × KRT18 | L(r) inside envelope (ubiquitous × epithelial) | ✅ All 3 strips |
-| Negative 2 | KRT8 × SCGB3A1 | L(r) inside envelope (different epithelial lineages) | ✅ All 3 strips |
+| Positive | KRT8 × KRT18 | Strongest co-localisation (co-expressed epithelial keratins) | ✅ All 3 strips |
+| Negative 1 | MALAT1 × KRT18 | No gene-specific co-localisation (ubiquitous × epithelial) | ✅ All 3 strips |
+| Negative 2 | KRT8 × SCGB3A1 | No co-localisation; distinct compartments (epithelial vs secretory airway) | ✅ All 3 strips (concave hull, n_sim=199; re-run 2026-06-16) |
 
 The permutation null shuffles gene labels while preserving spatial locations — it tests whether co-localisation is gene-specific or merely a consequence of shared tissue structure.
+
+> **Window/SES note.** The early control validation (rectangular window, `n_sim=99`) showed KRT8×KRT18 above and the negatives within the envelope. Under the **production concave-hull window** the binary envelope test is under-powered for *all* pairs (the tight window concentrates the label-swap null — see `notes/decision_log.md`, Step A.6), so controls are discriminated by **standardised effect size (SES)**: KRT8×KRT18 sits +2.67 envelope half-widths above MALAT1×KRT18, and KRT8×SCGB3A1 sits furthest below (signed-peak SES −6.92 / −4.81 / −3.02 across strips 1/2/3), i.e. spatial anti-association. Reproduce with `scripts/run_controls.sh`. Full record: `Final_Writeup/METHODS_LOG.md`.
 
 ## Key functions (in `notebooks/00_functions.ipynb`)
 

@@ -1,12 +1,99 @@
 # Decision log
 
 > Chronological record of methodological decisions, scientific findings, and
-> their justifications. Companion to `planning_docs/05_methods_decisions.md`
-> (which is the structured per-decision rationale) — this file is the
-> *sequential narrative* of how we got here. Feeds dissertation Methods §
-> rationale and Discussion § limitations.
+> their justifications. This file is the *sequential narrative* of how we got
+> here. Feeds dissertation Methods § rationale and Discussion § limitations.
+> (The old `planning_docs/05_methods_decisions.md` structured per-decision doc no
+> longer exists — its content lives here + in `notes/dissertation_outline.md`.)
 >
 > Newest entries at the top.
+
+---
+
+## 2026-06-16 — dissertation-prep verification pass; KRT8×SCGB3A1 re-run; doc corrections
+
+Built `Final_Writeup/METHODS_LOG.md` (per-notebook reproducibility record) and verified every
+methods claim against code + data. Findings/decisions:
+
+**Project renamed `NoSegs` → `STIPPLE`** (*Spatial, Transcript-level Inference of Pairwise Proximity in
+Ligand-receptor Expression*). Supersedes the 2026-06-04 "NoSegs canonical" decision **for the project
+name only**; on-disk folder, GitHub repo, and HPC scratch paths keep the old names (renaming them would
+break live paths) — so code/paths still read NoSeggs/NoSegs by design.
+
+**KRT8×SCGB3A1 re-run as a genuine negative control (supersedes 2026-06-04 Decision 4).** That decision
+removed it as a "fabricated placeholder." It had in fact been run in nb05, but only on FOV-3 strips 2–3
+with a rectangular window. Re-ran it on **all 3 strips of the cleaned 6-FOV data with the production
+pipeline** (concave hull ratio 0.1, n_sim=199, seed=42) via `scripts/run_controls.sh` →
+`results/controls/KRT8_SCGB3A1_strip_{1,2,3}.parquet`. Verdict: never exceeds the upper envelope (0
+sustained exceedances); signed-peak SES −6.92 / −4.81 / −3.02 (strips 1/2/3) — strong anti-association
+(epithelial vs secretory-airway compartments). Now a clean, fully-comparable third control.
+
+**Documentation corrections (README + notebook_audit updated to match):**
+- **Canonical cleaner is nb10, not nb08/08b.** `s1_all_strips_cleaned.parquet` is written by nb10:
+  `dbscan_noise_filter(x_col='x_rot_px', y_col='y_rot_px', group_cols=['fov'], min_cluster_size=150)`
+  then `apply_cleanup(min_cluster_size=120, also_exclude=[18 cluster global_ids])`. nb08/08b were dev.
+- **18 manual cluster IDs:** `41,96,136,158,228,229,811,834,1169,1252,1421,1470,1391,1687,1694,1561,1580,1584`.
+- **Canonical QC breakdown:** 7.6% noise + 2.0% small-cluster + 5.4% manual → **87% kept (611,150 / 702,873)**.
+  (The "6.8% / 400k" in older notes is a stale earlier-subset run.)
+- **Coordinates:** strip assignment + DBSCAN use PCA-rotated `x_rot_px` (global PCA, ≈6.4° ACW); the
+  **K-function uses raw `x_global_px/y_global_px`** (`get_coords` default) and Ripley's K is
+  rotation-invariant, so rotation does not affect co-localisation results.
+- **CellChatDB** is loaded via `liana.resource.select_resource('CellChatDB')` (liana 1.7.1, Dimitrov 2022).
+- **DBSCAN 1-NN** uses sklearn `NearestNeighbors`. **Mann-Whitney U** = `scipy.stats.mannwhitneyu`.
+- **Not used (drop from any software list):** geopandas, anndata (spatialdata dep only), statsmodels, scanpy.
+
+**Environments recorded:** local Python 3.13.11; HPC production Python 3.11.6 (numpy 2.4.4, pandas 3.0.2,
+scipy 1.17.1, scikit-learn 1.8.0, shapely 2.1.2, pyarrow 24.0.0, nbformat 5.10.4). Cite HPC versions for
+the screening stage, local versions for local notebook stages.
+
+---
+
+## 2026-06-04 (finishing pass) — native flowchart over PNG; NoSegs canonical; results headline; write-up kit
+
+**Decision 1 (Harry): rebuild the M6 flowchart as native, editable PowerPoint
+shapes** rather than embedding the flat `14_M6_workflow.png`. He wanted to edit
+individual bubbles' font sizes/colours, and preferred the **original A1 poster's
+flowchart** ("more punchy in shape and colour") while keeping the A0 version's
+**amber option/parameter chips**. Implemented as a `flowchart(x, y, w)` builder in
+`docs/_build_poster.py` drawing native `roundRect` autoshapes + `downArrow`
+connectors: A1-punchy two-colour semantics revived — **teal `#1A7A7A` for the two
+statistical-core stages** (bivariate Ripley K→L, label-swap permutation envelope),
+purple `#500778` for prep/output, green INPUT, blue OUTPUTS; amber chips
+(`#FFF4D6`/`#E0A800`) on each tunable step; light-purple quick-start panel with
+green ticks. Every bubble is now individually selectable/editable in PowerPoint.
+The nb14 `m6-flow-code` cell is kept as documentation but is **superseded for the
+poster** by the native shapes. *Rationale:* a flat PNG can't be tuned per-bubble;
+native shapes give Harry full control and the two-colour highlight makes the novel
+statistical core read instantly on A0.
+
+**Decision 2: "NoSegs" is the canonical spelling** (one g), fixed across all 14
+docs/code files + both `.pptx` filenames (`git mv` → `NoSegs_Poster_A0.pptx`,
+`NoSegs_Poster.pptx`). **Exception, deliberate:** the 3 HPC scripts
+(`scripts/run_array.sh`, `run_array_v2.sh`, `dry_run.sh`) keep "NoSeggs" inside
+their `cd /scratch/users/$USER/NoSeggs/cosmx-pointpattern` paths — those are live
+CREATE filesystem paths; renaming the strings without also renaming the remote
+directory would break re-runs. (The internal Jupyter kernelspec id `noseggs` is
+not user-facing and was also left.) nb14 was re-executed so `14_M0_raw_data.png`
+regenerates with a "NoSegs" title.
+
+**Decision 3: sharpen the results take-home.** The results column was the weak
+point — the payoff didn't land in ~10 s. Added a purple banner over Fig F with a
+bold one-line headline + a big **5/6** number callout + "+2.67 envelope
+half-widths" sub-line (native/editable). One `[ FILL: confirm headline wording ]`
+left for Harry to sign off.
+
+**Decision 4: drop the Negative-2 control row** (KRT8 × SCGB3A1). It was a
+fabricated placeholder — the pair is absent from both `lr_panel_results*.parquet`
+(never run at panel scale). Removed rather than invented. The Positive
+(KRT8×KRT18, SES −2.18) vs Negative (MALAT1×KRT18, SES −4.85) pair already carries
+the +2.67-half-width discrimination point. A real third control would need a live
+recompute via nb13 §7 (`peak_signed_ses`); deferred to the dissertation if wanted.
+
+**Created: `notes/poster_writeup_guide.md`** — a per-block reading list + key
+points + what-to-write + dissertation cross-refs, to take to Rome. Flags the one
+genuine reference gap: **RSV / lung infection biology** (type I IFN/ISGs, antigen
+presentation, T-cell recruitment, IFN-vs-NF-κB) — ~5 refs to gather; everything
+else is already in `intro_methods_reading.md`.
 
 ---
 
@@ -17,7 +104,7 @@ Arial everywhere — re-run nb13 results figs (B/C/F/G/H) in Arial for full
 consistency, not just the nb14 suite; (2) add an **overall-operations flowchart
 with a quick-start guide** showing what the tool is for and the tunable options
 along the way; (3) add a **raw-data view** showing what CosMx actually produces,
-highlighting the layers that fail vs the layer NoSeggs carries through.
+highlighting the layers that fail vs the layer NoSegs carries through.
 
 **Implemented (two new nb14 figures, 300 dpi, Arial).**
 - **`14_M0_raw_data.png`** — one FOV (FOV 4), three panels read live from
@@ -28,7 +115,7 @@ highlighting the layers that fail vs the layer NoSeggs carries through.
 - **`14_M6_workflow.png`** — portrait flowchart: 8 stages (INPUT → GMM strips →
   DBSCAN → window → bivariate Ripley K/L → permutation envelope → SES ranking →
   OUTPUTS) with amber option-chips for every tunable choice, plus a purple
-  quick-start panel ("use NoSeggs when…"). Cell `m6-flow-code` in nb14.
+  quick-start panel ("use NoSegs when…"). Cell `m6-flow-code` in nb14.
 
 **Poster (`docs/_build_poster.py`).** M0 now leads "The Problem — Segmentation
 Fails" (above M1); M6 replaces the verbose text-pipeline paragraph as the visual
@@ -50,10 +137,10 @@ cell sources rewritten with proper escapes and re-executed (exec counts 1–9).
 
 **Decision (Harry).** Pin **Arial** across all figures for a consistent look;
 build the actual A0 poster from the nb14 suite. The existing working file
-`docs/NoSeggs_Poster.pptx` was found to be **A1** (59.4 × 84.1 cm), not A0, and
+`docs/NoSegs_Poster.pptx` was found to be **A1** (59.4 × 84.1 cm), not A0, and
 carried the older text-pipeline + Fig A/B/C/D results layout.
 
-**Implemented.** New **`docs/NoSeggs_Poster_A0.pptx`** — true A0 portrait
+**Implemented.** New **`docs/NoSegs_Poster_A0.pptx`** — true A0 portrait
 (84.1 × 118.9 cm), built fresh (original A1 left untouched as a fallback) via
 `docs/_build_poster.py` (python-pptx). Fully native/editable: text boxes, a real
 PowerPoint table, and figures inserted as picture objects (no flattened images).
@@ -99,7 +186,7 @@ panels for flexible PowerPoint layout:
 - **M5** `14_M5_rscale.png` — two-segment r-grid schematic + concentric rings on
   a real KRT8 transcript + Shapely edge-correction weight at the hull boundary.
 - **T** `14_T_tool_positioning.png` — 2D positioning map (x = segmentation
-  dependence, y = answers L–R co-localisation); NoSeggs alone in the top-left
+  dependence, y = answers L–R co-localisation); NoSegs alone in the top-left
   vacant-niche quadrant. Positions conceptual, justified per
   `memory/project_competitor_landscape.md`.
 
@@ -147,7 +234,7 @@ figure cannot drift from the data.
 
 **Fig T — tool-comparison matrix** (`results/figures/13_T_tool_comparison.png`,
 generator `scripts/poster_fig_toolcompare.py`). 7 tools × 4 capability columns,
-NoSeggs the only all-green row. Facts verified 2026-06-01 against primary
+NoSegs the only all-green row. Facts verified 2026-06-01 against primary
 sources (Bento = Mah 2024 needs segmentation; Squidpy = cell-level; CellChat/
 LIANA = annotated matrices; Baysor = soft segmentation; FICTURE = seg-free but
 domains not L–R; spatstat = generic). Encodes the defensible novelty claim
@@ -568,7 +655,7 @@ Dan Nicolau), submission (16 July).
   verified novelty positioning. STATUS.md created as the live status board.
 - **Bento competitor question — verified.** Bento (Mah et al., *Genome Biology*
   2024) **requires** cell + nuclear segmentation as mandatory input. It does
-  subcellular pattern analysis *within* already-segmented cells. NoSeggs solves
+  subcellular pattern analysis *within* already-segmented cells. NoSegs solves
   a different problem (inter-cellular spatial co-localisation without
   segmentation). Bento is not a competitor — it is a complementary subcellular
   toolkit.
@@ -593,7 +680,7 @@ Dan Nicolau), submission (16 July).
 | Baysor | transcripts | soft cell assignments | Soft segmentation |
 | FICTURE (Si et al. 2023) | transcripts | pseudo-tissue factors | No (but doesn't do L–R) |
 | spatstat (R) | generic 2D point pattern | K, L | N/A — generic library |
-| **NoSeggs** | **raw transcripts only** | **L–R co-localisation + communities** | **No** |
+| **NoSegs** | **raw transcripts only** | **L–R co-localisation + communities** | **No** |
 
 **Sources verified:**
 - Mah CK et al. (2024) *Genome Biology* 25:82. https://doi.org/10.1186/s13059-024-03217-7

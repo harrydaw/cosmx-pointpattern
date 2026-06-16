@@ -8,11 +8,14 @@
 > Cross-references:
 > - `notes/decision_log.md` — chronological methodological + scientific findings (the *why* for each section)
 > - `notes/poster_design.md` — current figure list with locked captions (Methods + Results bones)
+> - `notes/poster_writeup_guide.md` — per-poster-block reading list + key points + what to write
 > - `notes/notebook_audit.md` — per-notebook state
-> - `planning_docs/04_background_topics.md` — Introduction scaffolding + reading list
-> - `notes/intro_methods_reading.md` — 120+ ref bibliography scaffold
-> - `planning_docs/05_methods_decisions.md` — 15 documented per-decision rationales
+> - `notes/intro_methods_reading.md` — 120+ ref bibliography scaffold + Intro scaffolding + key terms
 > - `notes/future_work.md` — Discussion future-work feed
+>
+> *(The old `planning_docs/04_background_topics.md` + `05_methods_decisions.md`
+> no longer exist — Intro scaffolding folded into `intro_methods_reading.md`,
+> per-decision rationale into `decision_log.md`.)*
 >
 > Target: ~12,000 words. Suggested split: 3,000 Intro / 2,500 Methods /
 > 3,500 Results / 2,500 Discussion / 250 Abstract / ~250 acknowledgements +
@@ -94,13 +97,19 @@
 
 ### 1. Data and preprocessing (~400 words)
 - CosMx SMI, severe asthmatic RSV-infected human lung sample S1.
-- 12 FOVs (4, 5, 8, 9, 10, 11 expanded from initial 3), 3 tissue strips
-  per FOV (control / infected / control), ~703k transcripts after QC.
-- Strip assignment via GMM on rotated x-coordinate (nb02, nb02c).
-- DBSCAN noise removal: adaptive ε = 97th-percentile 1-NN distance clipped
-  to [20, 30] px; min_samples = 5; min_cluster_size = 150. 6.8% flagged.
-- Manual cluster exclusion (nb08b): 18 outlier clusters.
+- 6 FOVs (4, 5, 8, 9, 10, 11; expanded from initial 3), 3 tissue strips
+  per FOV (control / infected / control). 702,873 transcripts total →
+  611,150 (87%) kept after QC.
+- Strip assignment via GMM on the PCA-rotated x-coordinate (`x_rot_px`;
+  `reassign_strips_gmm`, per-FOV, k=3; rotation from `add_rotated_coords`).
+- DBSCAN noise removal (canonical run in nb10, grouped by FOV on `x_rot_px`):
+  adaptive ε = 97th-percentile 1-NN distance (sklearn `NearestNeighbors`)
+  clipped to [20, 30] px; min_samples = 5; min_cluster_size = 150. 7.6% noise.
+- Manual cleanup (nb10 `apply_cleanup`, min_cluster_size=120): 18 hand-picked
+  outlier clusters + small clusters → 2.0% small + 5.4% manual.
 - Cleaned output: `data/processed/s1_all_strips_cleaned.parquet`.
+- NB: the K-function runs on raw `x_global_px/y_global_px` (rotation-invariant).
+- Full reproducibility record: `Final_Writeup/METHODS_LOG.md`.
 - Source for the rationale of each parameter: `planning_docs/05_methods_decisions.md`.
 
 ### 2. Observation window and edge correction (~400 words)
@@ -299,7 +308,7 @@
 ### 1. Comparison with the existing toolset (~500 words)
 - The verified competitor landscape (Bento, Squidpy, CellChat/LIANA,
   Baysor, FICTURE, spatstat). All require either segmentation or do not
-  do L-R; NoSeggs fills a vacant slot.
+  do L-R; NoSegs fills a vacant slot.
 - Quote the table from `decision_log.md` 2026-06-01 — verified positions.
 - Explicit credit to Bento for subcellular work and to Squidpy for cell-
   level Ripley; this work complements rather than displaces them.

@@ -1,6 +1,13 @@
-# Notebook Audit — NoSeggs / cosmx-pointpattern
+# Notebook Audit — NoSegs / cosmx-pointpattern
 
 > Updated 2026-05-11. Reference document for the dissertation write-up. Pairs with `lab_notebook.md` (chronological) and `network_revival_plan.md` (next-actions).
+>
+> **2026-06-16 correction (dissertation-prep audit).** Three fixes verified against code + data: (1) the
+> canonical `s1_all_strips_cleaned.parquet` is produced by **nb10**, not nb08b — with DBSCAN grouped by
+> `[fov]` on `x_rot_px`, `min_cluster_size=120`, and an 18-cluster manual `also_exclude` list; (2) the
+> canonical QC breakdown is **7.6% noise + 2.0% small + 5.4% manual = 87% kept of 702,873** (the "6.8% /
+> 400k" below is a stale earlier-subset run); (3) KRT8×SCGB3A1 has been re-run as a genuine 3-strip
+> negative control (concave hull, n_sim=199). See `Final_Writeup/METHODS_LOG.md` for the full record.
 
 ---
 
@@ -30,8 +37,9 @@ nb05  MALAT1×KRT18 negative ctrl   ─── PASSED (correctly null)
 nb06  LR panel curation             ─── 146 viable pairs from CellChatDB
 nb07  Multi-FOV control retest      ─── stable across FOVs
    │
-nb08  DBSCAN noise removal         ─── 6.8% noise flagged
-nb08b Manual cluster QC cleanup     ─── 18 outlier clusters excluded
+nb08  DBSCAN noise-removal (dev)   ─── method development
+nb08b Manual-cleanup tooling (dev)  ─── superseded by nb10
+nb10  Canonical clean (x_rot, fov) ─── 18 clusters excluded; 87% kept
    │                              ─── s1_all_strips_cleaned.parquet
 nb09  Concave hull + edge corr.    ─── fraction_inside_hull()
 nb09a Unified window API
@@ -97,15 +105,18 @@ nb12  Network analysis              ─── ⚠ only 1/438 passes filter
 **Purpose:** Re-run controls across all 6 FOVs to confirm robustness once the dataset was expanded.
 **Status:** ✅ Clean.
 
-### 08 — Improved QC (DBSCAN)
-**Purpose:** Per-FOV noise filtering.
-**Decisions:** Adaptive `eps` = 97th-percentile 1-NN distance (clipped to [20, 30] px); `min_samples = 5`; `min_cluster_size = 150`. ~6.8 % of 400k+ points flagged as noise.
-**Status:** ✅ Clean and well-justified.
+### 08 — Improved QC (DBSCAN) — *method development*
+**Purpose:** Develop the per-group noise filter. (Grouped `[fov, strip]` on `x_global_px_transformed`.)
+**Decisions:** Adaptive `eps` = 97th-percentile 1-NN distance (sklearn `NearestNeighbors`, clipped to [20, 30] px); `min_samples = 5`; `min_cluster_size = 150`.
+**Note:** the ~6.8 % / 400k figure here is a *stale earlier-subset* run. The canonical filter is applied in **nb10** (grouped `[fov]` on `x_rot_px`) → 7.6 % noise of 702,873. See top-of-file correction.
+**Status:** ✅ Clean (method dev).
 
-### 08b — Manual QC cleanup
-**Purpose:** Hand-review cluster IDs flagged in nb08; remove 18 specific outlier clusters.
-**Outputs:** `s1_all_strips_cleaned.parquet` (the canonical input from here on; has columns `is_noise`, `is_small_cluster`, `manually_excluded`).
-**Status:** ✅ Clean. List of excluded cluster IDs is documented in-notebook.
+### 08b — Manual QC cleanup — *superseded by nb10*
+**Purpose:** Early manual-cleanup tooling (`build_cluster_table` / `apply_cleanup`). As saved, its config
+has `also_exclude=[]`, `exclude_fov_strips=[]` (no hand-picked exclusions).
+**Note:** does **not** produce the canonical cleaned file. The 18-cluster manual exclusion + the rotated-
+coord DBSCAN that appear in the on-disk `s1_all_strips_cleaned.parquet` come from **nb10** (see below).
+**Status:** 🟡 Superseded by nb10 for the final cleaning.
 
 ### 09 — Improved windows & edge correction
 **Purpose:** Replace rectangular window with concave hull; implement Shapely-based edge correction (`fraction_inside_hull`).
@@ -126,10 +137,11 @@ nb12  Network analysis              ─── ⚠ only 1/438 passes filter
 **Purpose:** Quantitative comparison of window choices: concave area is 65–75 % of convex area; reduces false-interior overlap.
 **Status:** ✅ Clean.
 
-### 10 — POC end-to-end
-**Purpose:** Single notebook running the whole pipeline on a tiny subset; checklist of params before HPC submission.
-**Decisions, locked here for the HPC run:** `R_CC = 50` (cell-cell radius bound, ≈ 9 µm), `R_MAX = 250` px (≈ 45 µm), `N_R = 50` (radii sampled), **`N_SIM = 99`** in this notebook, `SEED = 42`.
-**Status:** ✅ Clean. ⚠ The `N_SIM = 99` set here is *overridden* by the HPC orchestration script (`run_array.sh:61` passes `--n_sim 199`).
+### 10 — POC end-to-end — *also the CANONICAL cleaner*
+**Purpose:** Runs the whole pipeline and **produces the canonical `data/processed/s1_all_strips_cleaned.parquet`**.
+**Canonical QC/cleaning (the version on disk):** `dbscan_noise_filter(x_col='x_rot_px', y_col='y_rot_px', group_cols=['fov'], min_cluster_size=150)`, then `apply_cleanup(min_cluster_size=120, also_exclude=[41,96,136,158,228,229,811,834,1169,1252,1421,1470,1391,1687,1694,1561,1580,1584])` (18 hand-picked clusters). Breakdown: 7.6% noise + 2.0% small + 5.4% manual → **87% kept (611,150 / 702,873)**.
+**Decisions, locked here for the HPC run:** `R_CC = 50` (≈ 9 µm), `R_MAX = 250` px (≈ 45 µm), `N_R = 50`, **`N_SIM = 99`** in this notebook, `SEED = 42`.
+**Status:** ✅ Clean (canonical cleaner + POC freeze). ⚠ The `N_SIM = 99` here is *overridden* by `run_array.sh` (`--n_sim 199`).
 
 ### HPC run — `scripts/batch_k_analysis.py` + `run_array.sh`
 **Configuration used in production:**
@@ -168,9 +180,10 @@ nb12  Network analysis              ─── ⚠ only 1/438 passes filter
 | `n_consec` (sustained exceedance) | 3 | nb12 | **{1, 2, 3, 5}** — quick sweep |
 | Window type | concave hull, `ratio = 0.1` | nb09 | rect vs convex vs concave already done (nb09c) |
 | Edge correction | `fraction_inside_hull` (Shapely) | nb09 | — |
-| DBSCAN `eps` | 97th-pctile 1-NN, clipped [20, 30] | nb08 | — |
-| DBSCAN `min_samples` | 5 | nb08 | — |
-| `min_cluster_size` | 150 | nb08 | — |
+| DBSCAN `eps` | 97th-pctile 1-NN, clipped [20, 30] | nb08 dev → **nb10** (canonical, on `x_rot_px`, group `[fov]`) | — |
+| DBSCAN `min_samples` | 5 | nb08 / nb10 | — |
+| `min_cluster_size` | 150 (small-cluster flag) / **120** (manual-exclude, nb10) | nb08 / **nb10** | — |
+| Manual cluster exclusions | 18 cluster `global_id`s | **nb10** `apply_cleanup(also_exclude=...)` | — |
 | LR panel | 146 CellChatDB pairs, abundance ≥ 50 | nb06 | **Add ~80 anchor pairs** (see `extended_panel_rationale.md`) |
 | Edge weight (nb12) | peak `l_obs` | nb12 | peak SES, area-above-envelope |
 | Community detection | Louvain, `seed = 42` | nb12 | 10 seeds; add Leiden |
