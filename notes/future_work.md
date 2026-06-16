@@ -295,7 +295,7 @@ re-run for verification.
 ### Open questions to resolve before implementation
 
 1. **Does the HPC venv allow `leidenalg`?** Need to install it on the KCL
-   CREATE venv (`/scratch/users/k25115761/NoSeggs/.../.venv`) and confirm
+   CREATE venv (`/scratch/users/k25115761/NoSegs/.../.venv`) and confirm
    imports work in a SLURM job. `python-igraph` ships as a wheel for Linux
    x86_64 so should be fine.
 2. **What's the right default `raster_resolution`?** Validation notebook will
